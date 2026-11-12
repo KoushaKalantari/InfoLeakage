@@ -21,11 +21,11 @@ move fast.
 
 ## Current plan
 
-1. Make the repo public, labelled early work.
-2. Follow Statlib's process (https://stat-lib.github.io/contribute.html):
-   - open a GitHub issue on `stat-lib/statlib` with a short design doc covering the
-     mathematics and the planned code;
-   - then share it on Zulip.
+1. ~~Make the repo public, labelled early work.~~ Done.
+2. Statlib's process (https://stat-lib.github.io/contribute.html): design issue
+   [stat-lib/statlib#78](https://github.com/stat-lib/statlib/issues/78), PR
+   [stat-lib/statlib#79](https://github.com/stat-lib/statlib/pull/79) (maximal leakage) and a
+   Zulip post in #Statlib, all 2026-11-12. Next: respond to maintainer review.
 3. The first contribution goes to **Statlib**. Do a Mathlib PR only if a maintainer points to
    a gap upstream.
 
@@ -33,9 +33,14 @@ Deferred: M3, and any paper commitment.
 
 ## Milestones
 
-**Done (2026-11-11).** The six papers in the README are formalized and verified: maximal
+**Done (2026-11-11).** The six leakage papers in the README are formalized and verified: maximal
 leakage, α-leakage, the ∞-Rényi variational formula, gain-function leakage, maximal
 (α,β)-leakage, and DP under Hamming distortion.
+
+**Done (2026-11-12).** Landmark papers machine-proofread: Shannon (1949), Smith (2009),
+Braun–Chatzikokolakis–Palamidessi (2009), Alvim et al. (CSF 2012, CSF 2014),
+Duchi–Jordan–Wainwright, and Dong–Roth–Su. Findings are listed in the README. Codex fidelity
+review of these is still to run.
 
 **Next.** Fill gaps in the six papers:
 - α-leakage: monotonicity in α, quasi-convexity, Thms. 5–6.
@@ -45,10 +50,9 @@ leakage, α-leakage, the ∞-Rényi variational formula, gain-function leakage, 
 
 Also connect the closed forms to Statlib's `renyiDiv`, and extend beyond finite alphabets.
 
-**M4 — bridges.**
-- g-leakage and the "miracle" bound (Alvim et al.).
-- ε-local DP ⇒ leakage bounds.
-- Maximal (α, β)-leakage (Kosut).
+**M4 — bridges.** g-leakage and the miracle bound, local DP, and maximal (α, β)-leakage are
+done. Remaining: Pinsker's inequality (to close Duchi–Jordan–Wainwright Cor. 3), Gaussian DP,
+and f-DP composition.
 
 **M5 — upstream.**
 - Generalize the definitions beyond finite alphabets.
