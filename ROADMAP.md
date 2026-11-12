@@ -33,21 +33,17 @@ Deferred: M3, and any paper commitment.
 
 ## Milestones
 
-**M0–M2 — done (2026-11-11).** Maximal leakage on finite alphabets:
-- the operational definition and Theorem 1 of Issa–Wagner–Kamath, with the supremum attained;
-- data processing in both directions;
-- support bounds;
-- zero leakage iff independence;
-- composition and additivity;
-- `I(X;Y) ≤ L(X → Y)`.
+**Done (2026-11-11).** The six papers in the README are formalized and verified: maximal
+leakage, α-leakage, the ∞-Rényi variational formula, gain-function leakage, maximal
+(α,β)-leakage, and DP under Hamming distortion.
 
-See the README table. Files: `InfoLeakage/MaximalLeakage/{Basic,Operational,Properties,MutualInfo}.lean`.
+**Next.** Fill gaps in the six papers:
+- α-leakage: monotonicity in α, quasi-convexity, Thms. 5–6.
+- MαbeL: the conditional and vector versions.
+- Gain functions: the α-loss section.
+- DP–Hamming: the LP case of Thm. 2(b), and Thm. 3.
 
-**M3 — Sibson/Arimoto α-MI and α-leakage**, on Statlib's `renyiDiv`.
-- Sibson's `I_α` as `inf_Q D_α(P_XY ‖ P_X ⊗ Q)` and its closed form.
-- Monotone in α, with `I_α → L(X → Y)` as `α → ∞`.
-- α-leakage and maximal α-leakage (Liao–Kosut–Sankar–Calmon, arXiv:1806.03332):
-  maximal α-leakage equals Sibson/Arimoto capacity over inputs with the same support.
+Also connect the closed forms to Statlib's `renyiDiv`, and extend beyond finite alphabets.
 
 **M4 — bridges.**
 - g-leakage and the "miracle" bound (Alvim et al.).
