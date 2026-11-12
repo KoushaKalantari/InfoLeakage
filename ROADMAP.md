@@ -19,25 +19,17 @@ that pieces can be upstreamed.
 Re-check `cslib-community/cslib-frontier` and Statlib before starting each milestone. Both
 move fast.
 
-## Current plan: a 4-week pilot (from 2026-11-09)
+## Current plan
 
-Set a weekly hours cap and stick to it.
-1. Week 1:
-   - Read M0 until you could defend every line, then reprove one lemma yourself.
-   - Make the repo public, labelled preliminary.
-   - Write your own short `#Statlib` post asking about the right generality and what would be
-     useful.
-2. Aim the first reviewed contribution at **Statlib**. Do a Mathlib PR only if a maintainer
-   points to a gap upstream.
-3. Week-4 exit criteria:
-   - you can explain the contribution and extend it without AI;
-   - one narrowly scoped public contribution that builds, has no `sorry`, states its scope
-     accurately and discloses AI use;
-   - substantive review from a knowledgeable contributor, with the review addressed.
+1. Make the repo public, labelled early work.
+2. Follow Statlib's process (https://stat-lib.github.io/contribute.html):
+   - open a GitHub issue on `stat-lib/statlib` with a short design doc covering the
+     mathematics and the planned code;
+   - then share it on Zulip.
+3. The first contribution goes to **Statlib**. Do a Mathlib PR only if a maintainer points to
+   a gap upstream.
 
-   A merge is a bonus. Continue only if all this fits the hours budget.
-
-Deferred until after the pilot: M3, and any paper commitment.
+Deferred: M3, and any paper commitment.
 
 ## Milestones
 
@@ -70,11 +62,16 @@ problems `U - X - Y - Û` equals the closed form. This is the headline result.
 - Generalize the definitions beyond finite alphabets.
 - Propose the finished files to Statlib, then the stable core to Mathlib.
 
-## Working rules (from Mathlib's contribution policy)
+## Working rules (from the Statlib and Mathlib contribution guides)
 
-- Mathlib summarily closes low-quality LLM-produced PRs. Every line must be understood, and
-  every design choice defensible, by a human without AI help. Disclose any AI use in the PR
-  description.
+- Statlib welcomes AI-assisted ("agentic") code as long as its use is disclosed. Every PR
+  carries the author's declaration:
+  - they have read and understood every line;
+  - they take responsibility for it;
+  - they can answer reviewer questions without re-running the AI tool.
+- A PR description needs a rationale paragraph written by a human.
+- Mathlib summarily closes low-quality LLM-produced PRs and requires disclosing AI use in
+  the PR description.
 - Comments on GitHub and Zulip must be in your own words: no LLM-written posts.
 - Discuss design in the Lean Zulip `#Statlib` channel before large choices or PRs. Rémy
   Degenne coordinates information theory there.
