@@ -1,0 +1,19 @@
+name = "InfoLeakage"
+defaultTargets = ["InfoLeakage"]
+version = "0.1.0"
+keywords = ["information theory", "privacy", "leakage", "probability"]
+packagesDir = ".lake/packages"
+lintDriver = "batteries/runLinter"
+
+[leanOptions]
+autoImplicit = false
+# Match mathlib's linters so code stays upstreamable.
+weak.linter.mathlibStandardSet = true
+
+[[require]]
+name = "Statlib"
+git = "https://github.com/stat-lib/statlib"
+rev = "eeaac0283690efaa60c31115400cf561836baeb9"
+
+[[lean_lib]]
+name = "InfoLeakage"
