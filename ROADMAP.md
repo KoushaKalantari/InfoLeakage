@@ -33,19 +33,15 @@ Deferred: M3, and any paper commitment.
 
 ## Milestones
 
-**M0 — done.** Finite-output maximal leakage as the Issa–Wagner–Kamath closed form
-`log ∑_y max_{x ∈ supp} W(y|x)`. Proved: it is nonnegative, at most `log |Y|` and at most
-`log |supp X|`, and post-processing the output cannot increase it.
-(`InfoLeakage/MaximalLeakage/Basic.lean`)
+**M0–M2 — done (2026-11-11).** Maximal leakage on finite alphabets:
+- the operational definition and Theorem 1 of Issa–Wagner–Kamath, with the supremum attained;
+- data processing in both directions;
+- support bounds;
+- zero leakage iff independence;
+- composition and additivity;
+- `I(X;Y) ≤ L(X → Y)`.
 
-**M1 — maximal leakage, finite alphabets.**
-- `L(X → Y) = 0` iff `X` and `Y` are independent.
-- Pre-processing data processing: `L(X → Z) ≤ L(Y → Z)` for `X - Y - Z`.
-- `I(X; Y) ≤ L(X → Y)`, against Statlib's `mutualInfo`.
-- Composition bounds for several releases.
-
-**M2 — the operational theorem.** Issa–Wagner–Kamath Thm 1: the supremum over guessing
-problems `U - X - Y - Û` equals the closed form. This is the headline result.
+See the README table. Files: `InfoLeakage/MaximalLeakage/{Basic,Operational,Properties,MutualInfo}.lean`.
 
 **M3 — Sibson/Arimoto α-MI and α-leakage**, on Statlib's `renyiDiv`.
 - Sibson's `I_α` as `inf_Q D_α(P_XY ‖ P_X ⊗ Q)` and its closed form.

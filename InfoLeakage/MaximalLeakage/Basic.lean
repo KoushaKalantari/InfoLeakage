@@ -40,12 +40,17 @@ atom take it as an explicit hypothesis.
 * `maxLeakageSum_comp_le`, `maxLeakage_comp_le`: **data processing** — post-processing the output
   through another channel `η` cannot increase maximal leakage.
 
+## See also
+
+* `InfoLeakage.MaximalLeakage.Operational`: the operational definition and Theorem 1 of
+  Issa–Wagner–Kamath, which shows that this closed form equals it.
+* `InfoLeakage.MaximalLeakage.Properties`: data processing for pre-processing,
+  `L(X → Y) ≤ log |supp Y|`, zero leakage iff independence, composition and additivity.
+* `InfoLeakage.MaximalLeakage.MutualInfo`: `I(X; Y) ≤ L(X → Y)`.
+
 ## TODO
 
-* The operational characterization (Theorem 1 of Issa–Wagner–Kamath).
-* `L(X → Y) = 0` iff `X` and `Y` are independent.
-* Pre-processing data processing `L(X → Z) ≤ L(Y → Z)` for a Markov chain `X - Y - Z`.
-* `I(X; Y) ≤ L(X → Y)`, and maximal leakage as Sibson mutual information of order `∞`.
+* Maximal leakage as Sibson mutual information of order `∞`, and beyond finite alphabets.
 -/
 
 @[expose] public section
@@ -59,12 +64,13 @@ variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β
   {mγ : MeasurableSpace γ} {μ : Measure α} {κ : Kernel α β}
 
 /-- The sum `∑_y ⨆_{x ∈ supp μ} κ x {y}` whose logarithm is the maximal leakage `maxLeakage μ κ`.
-The supremum ranges over the atoms of `μ`. -/
+The supremum ranges over the atoms of `μ`, so this is only meaningful when `μ` is purely atomic,
+e.g. for a countable input alphabet with measurable singletons. -/
 noncomputable def maxLeakageSum [Fintype β] (μ : Measure α) (κ : Kernel α β) : ℝ≥0∞ :=
   ∑ y, ⨆ (x) (_ : μ {x} ≠ 0), κ x {y}
 
 /-- The maximal leakage `L(X → Y)` from an input `X ∼ μ` to the output `Y` of the channel `κ`,
-in nats, for a finite output alphabet. -/
+in nats, for a finite output alphabet and a purely atomic `μ` (see `maxLeakageSum`). -/
 noncomputable def maxLeakage [Fintype β] (μ : Measure α) (κ : Kernel α β) : ℝ :=
   Real.log (maxLeakageSum μ κ).toReal
 
