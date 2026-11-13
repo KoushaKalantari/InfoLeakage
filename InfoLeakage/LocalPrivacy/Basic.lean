@@ -83,7 +83,9 @@ paper's `sup_S |P₁(S) - P₂(S)|` (`isGreatest_tvDistSum`).
   `ε ∈ [0, 22/35]`, not the Fano bound (19): `mutualInfoUniform_seqMarginal_le_four_mul`. It
   assumes the total variation bound `‖P_ν - P_ν'‖²_TV ≤ κ² δ² / 2` that the paper derives from the
   packing condition (17) by Pinsker's inequality, rather than (17) itself; sharper form
-  `mutualInfoUniform_seqMarginal_le_two_mul` (`2 n ε² r` for `ε ∈ [0, log 2]`).
+  `mutualInfoUniform_seqMarginal_le_two_mul` (`2 n ε² r` for `ε ∈ [0, log 2]`). The version that
+  assumes (17) itself is `mutualInfoUniform_seqMarginal_le_four_mul_of_klDiv_le` in
+  `InfoLeakage.LocalPrivacy.Pinsker`.
 * Mathlib's `klDiv`: `klDiv_eq_ofReal_klDivSum`. There is no bridge from `outputLaw`,
   `seqMarginal` or `tvDistSum` to Mathlib's measures, kernels or total variation.
 
@@ -136,7 +138,8 @@ paper's `sup_S |P₁(S) - P₂(S)|` (`isGreatest_tvDistSum`).
 
 Theorem 3 (the Assouad-type bound), Corollary 4 (tensorization of Theorem 2 for non-interactive
 channels), Lemma 1, the minimax parts of Corollaries 2 and 3
-(Le Cam and Fano), Pinsker's inequality, and the estimation results (Propositions 1–9). Only
+(Le Cam and Fano), and the estimation results (Propositions 1–9). Pinsker's inequality is in
+`InfoLeakage.FInformation.Pinsker` and is applied in `InfoLeakage.LocalPrivacy.Pinsker`. Only
 finite alphabets are treated.
 -/
 
@@ -1011,11 +1014,15 @@ theorem mutualInfoUniform_seqMarginal_le_two_mul (hQ₀ : ∀ i h x z, 0 ≤ Q i
     _ = 2 * n * ε ^ 2 * r := by ring
 
 /-- The mutual information step in the proof of **Corollary 3** (private local Fano) of
-Duchi–Jordan–Wainwright, on finite alphabets: if `‖P_{ν,i} - P_{ν',i}‖²_TV ≤ κ²δ² / 2` for all
-`ν, ν'` and all `i : ℕ` (only `i < n` matters) and `ε ∈ [0, 22/35]`, then
-`I(Z_{1:n}; V) ≤ 4 n ε² κ² δ²`. This is not the Fano lower bound (19) itself, and it assumes the
-total variation bound that the paper derives from the packing condition (17) by Pinsker's
-inequality (not formalized here), rather than (17). -/
+Duchi–Jordan–Wainwright, on finite alphabets (both the data alphabet `α` and the private output
+alphabet `β` are finite, which excludes continuous channels such as additive Laplace noise): if
+`‖P_{ν,i} - P_{ν',i}‖²_TV ≤ κ²δ² / 2` for all `ν, ν'` and all `i : ℕ` (only `i < n` matters) and
+`ε ∈ [0, 22/35]`, then `I(Z_{1:n}; V) ≤ 4 n ε² κ² δ²`. This is not the Fano lower bound (19)
+itself, and it assumes the total variation bound that the paper derives from the packing
+condition (17) by Pinsker's inequality, rather than (17). The version from (17) itself, via
+Pinsker's inequality `two_mul_sq_tvDistSum_le_klDivSum`, is
+`mutualInfoUniform_seqMarginal_le_four_mul_of_klDiv_le` (in `InfoLeakage.LocalPrivacy.Pinsker`).
+-/
 theorem mutualInfoUniform_seqMarginal_le_four_mul (hQ₀ : ∀ i h x z, 0 ≤ Q i h x z)
     (hQ₁ : ∀ i h x, ∑ z, Q i h x z = 1) (hQ : ∀ i h, IsLocalDP (Q i h) ε)
     (hP₀ : ∀ ν i x, 0 ≤ P ν i x) (hP₁ : ∀ ν i, ∑ x, P ν i x = 1) (hε₀ : 0 ≤ ε)

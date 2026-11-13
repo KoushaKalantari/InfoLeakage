@@ -97,14 +97,17 @@ finite alphabets.
   read `f(A)` instead of `h(A)`, since `A` is an input of `f`, not of `h = f ∘ g`. The argument
   is otherwise correct.
 
+Proposition 6 and Corollary 2 (Laplace mechanism) are in `InfoLeakage.RenyiDP.Laplace`.
+
 ## Not formalized
 
 * The Bayesian interpretation (inequality (1) and the Bayes-factor rows of Table I),
   Proposition 8 (nonnegativity; Statlib's `renyiDiv` is `ℝ≥0∞`-valued), Corollary 4, items 2–4
   (they involve `D_∞`), adaptive composition at `α = 1`.
 * Lemma 1, Proposition 4 and Corollary 1 (advanced composition), Proposition 5 at `α = 1`,
-  Proposition 6 and Corollary 2 (Laplace mechanism), Proposition 7 and Corollary 3 (Gaussian
-  mechanism), the differential-privacy column of Table II (e.g. randomized response is
+  Proposition 7 (Gaussian mechanism; for `α > 1`, Corollary 3 follows from the Gaussian
+  mechanism's zCDP bound in `InfoLeakage.ZCDP.Basic` and `isZCDP_zero_iff_forall_isRenyiDP`),
+  the differential-privacy column of Table II (e.g. randomized response is
   `log (p / (1 - p))`-DP), and the numerical comparisons of Sections VI–VII.
 -/
 

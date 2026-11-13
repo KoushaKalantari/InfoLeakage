@@ -59,9 +59,9 @@ top of it.
 
 ## Status
 
-Main results of about forty-five papers and books are formalized, mostly for finite alphabets;
-the DP, Rényi DP, zCDP, mechanism and f-information results hold on general measurable spaces.
-About 30,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
+Main results of about fifty papers and books are formalized, mostly for finite alphabets; the
+DP, Rényi DP, zCDP, mechanism and f-information results hold on general measurable spaces.
+About 35,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
 script over the whole library). The library passes the Mathlib linters and `lake lint`. Each paper's statements were adversarially reviewed against the
 paper by a second AI reviewer, and every fix raised was applied: OpenAI Codex for the six leakage
 papers, and an independent Claude referee for everything else (Codex review of those is
@@ -74,13 +74,16 @@ isn't formalized.
 |---|---|---|
 | Dwork, Roth, *The algorithmic foundations of differential privacy*, 2014; Dwork, McSherry, Nissim, Smith, TCC 2006 | `DP/Basic.lean` | ε- and (ε,δ)-DP of kernels; post-processing (Prop. 2.1); group privacy (Thm. 2.2); composition of two mechanisms, adaptive (Thm. B.1) and k-fold (Thm. 3.16, Cor. 3.15); parallel composition (McSherry, SIGMOD 2009, two parts) |
 | Warner, JASA 1965; Kairouz, Oh, Viswanath, JMLR 2016; Dwork–Roth Ch. 3; McSherry, Talwar, FOCS 2007; Ghosh, Roughgarden, Sundararajan, STOC 2009 | `DP/{RandomizedResponse,Laplace,Exponential,Geometric}.lean` | Binary and k-ary randomized response with exact privacy level (Claim 3.5); Laplace mechanism (Thm. 3.6, scalar and ℓ₁; Fact 3.7; Thm. 3.8); exponential mechanism (Thms. 3.10–3.11, Cor. 3.12); geometric mechanism |
-| Mironov, *Rényi differential privacy*, CSF 2017 ([arXiv:1702.07476](https://arxiv.org/abs/1702.07476)) | `RenyiDP/` | Def. 4, post-processing, adaptive composition (Prop. 1), ε-DP ⇔ RDP at all orders, RDP ⇒ (ε,δ)-DP (Prop. 3), Props. 2, 9–11, randomized response (Prop. 5) |
+| Mironov, *Rényi differential privacy*, CSF 2017 ([arXiv:1702.07476](https://arxiv.org/abs/1702.07476)) | `RenyiDP/` | Def. 4, post-processing, adaptive composition (Prop. 1), ε-DP ⇔ RDP at all orders, RDP ⇒ (ε,δ)-DP (Prop. 3), Props. 2, 9–11, randomized response (Prop. 5), Laplace mechanism (Prop. 6, Cor. 2) |
 | Bun, Steinke, *Concentrated differential privacy*, TCC 2016 ([arXiv:1605.02065](https://arxiv.org/abs/1605.02065)) | `ZCDP/` | Def. 1.1, Lemmas 1.7–1.8, 2.3–2.4, 3.2, 3.5, Props. 1.3, 1.4, 1.6 (Gaussian mechanism); k-fold composition bound; zCDP ⇔ RDP at every order |
 | Dong, Roth, Su, *Gaussian differential privacy* ([arXiv:1905.02383](https://arxiv.org/abs/1905.02383)) | `FDP/` | See the landmark table below |
 | Balle, Barthe, Gaboardi, *Privacy amplification by subsampling*, NeurIPS 2018 ([arXiv:1807.01647](https://arxiv.org/abs/1807.01647)) | `Amplification/` | Hockey-stick divergence, Thm. 1 ((ε,δ)-DP ⇔ hockey-stick bound), Thm. 2 (advanced joint convexity), Thms. 8–9 (Poisson subsampling, sampling without replacement), Thm. 13 (tightness) |
 | Dwork, Rothblum, Vadhan, *Boosting and differential privacy*, FOCS 2010; Dwork–Roth Thm. 3.20, Cor. 3.21 | `AdvancedComposition/` | Advanced composition of ε-DP mechanisms, adaptive and non-adaptive, via zCDP (with the sharper kε²/2 term); Cor. 3.21 under δ′ ≤ e^{−ε′/8} |
 | Balle, Wang, *Improving the Gaussian mechanism for differential privacy*, ICML 2018 ([arXiv:1805.06530](https://arxiv.org/abs/1805.06530)); Dong–Roth–Su Cor. 2.13; Dwork–Roth Thm. A.1 | `AnalyticGaussian/` | Exact privacy profile of the Gaussian mechanism (Thm. 8, Lemma 6, Thm. 5), Thms. 1, 2, 4 (corrected), Lemmas 3, 7; classical calibration (scalar queries) |
 | Dwork–Roth Claim 3.9, Thm. 3.23; Lyu, Su, Li, *Understanding the sparse vector technique*, VLDB 2017 ([arXiv:1603.01699](https://arxiv.org/abs/1603.01699)) | `SparseVector/` | Report noisy max; AboveThreshold (fixed query sequence); Lyu–Su–Li Thm. 4 (c = 1) and Thm. 3 (the variant without query noise is not DP) |
+| Kairouz, Oh, Viswanath, *The composition theorem for differential privacy*, ICML 2015 / IEEE T-IT 2017 ([arXiv:1311.0776](https://arxiv.org/abs/1311.0776)) | `OptimalComposition/` | The canonical (ε,δ) pair; (ε,δ)-DP ⇔ post-processing of it (Thms. 2.1, 2.4, and 2.5 for the canonical pair, finite alphabets); the exact optimal k-fold composition (Thm. 3.3), non-adaptive and adaptive, with tightness |
+| Nissim, Raskhodnikova, Smith, *Smooth sensitivity and sampling in private data analysis*, STOC 2007 | `SmoothSensitivity/` | Local and smooth sensitivity, Lemma 2.3 (smallest smooth bound), admissible noise (Def. 2.5, d = 1), Lemma 2.6 (with the δ its proof gives), Lemma 2.9 and Cor. 2.4(2) for Laplace noise |
+| Chaudhuri, Monteleoni, Sarwate, *Differentially private empirical risk minimization*, JMLR 2011 ([arXiv:0912.0071](https://arxiv.org/abs/0912.0071)) | `PrivateERM/` | Lemma 1, Cor. 1 (sensitivity 2/(nΛ) of regularized ERM), Thm. 1 (output perturbation is ε-DP), Cor. 2 (logistic regression) |
 | Chan, Shi, Song, *Private and continual release of statistics*, ACM TISSEC 2011; Dwork, Naor, Pitassi, Rothblum, STOC 2010 | `ContinualRelease/` | Privacy of the p-sum, simple, two-level and binary counting mechanisms (Obs. 1, §3.1, Thms. 3.1, 3.3, 3.5 corrected, with tightness) |
 
 ### Information measures
@@ -93,6 +96,7 @@ isn't formalized.
 | du Pin Calmon, Fawaz, *Privacy against statistical inference*, Allerton 2012 ([arXiv:1210.2123](https://arxiv.org/abs/1210.2123)); Jiang, Li, Tandon, *Local information privacy* ([arXiv:2001.02385](https://arxiv.org/abs/2001.02385)) | `PointwiseLeakage/InfoPrivacy.lean` | ε-information privacy (Def. 6), Thm. 3; local information privacy and its relations to local DP, maximal leakage and pointwise maximal leakage |
 | Polyanskiy, Wu, *Information Theory: From Coding to Learning*, 2024, Ch. 7; Csiszár 1972 | `FInformation/` | **Pinsker's inequality** (Thm. 7.10) on general measurable spaces; χ²-divergence and KL ≤ log(1 + χ²) (7.34); f-information (7.46) with data processing (Thm. 7.16); TV-, χ²- and Hellinger-type information |
 | Bellare, Tessaro, Vardy, *A cryptographic treatment of the wiretap channel* (CRYPTO 2012; [arXiv:1201.2205](https://arxiv.org/abs/1201.2205)) | `SemanticSecurity/` | Semantic, distinguishing (formula and game) and mutual-information security; Thm. 4.1 (SS ⇔ DS), Thm. 4.5 (MIS ⇒ DS), Thm. 4.9 (DS ⇒ MIS), Lemmas 4.3–4.8 (incl. a finite-alphabet Pinsker), and the asymptotic implications between the security notions |
+| Calmon, Makhdoumi, Médard, *Fundamental limits of perfect privacy*, ISIT 2015; Calmon et al., *Principal inertia components and applications*, IEEE T-IT 2017 ([arXiv:1704.00820](https://arxiv.org/abs/1704.00820)) | `PerfectPrivacy/` | Principal inertia components; perfect privacy with useful disclosure is possible iff δ = 0 (Thm. 3, first clause), Cor. 1, Lemma 5, eq. (19), Cor. 2 (corrected), the case \|X\| > \|S\| |
 | Massey, *Causality, feedback and directed information*, ISITA 1990; Massey, Massey, ISIT 2005 | `DirectedInfo/` | Directed information, the conservation law I(Xⁿ;Yⁿ) = I(Xⁿ→Yⁿ) + I(0∗Yⁿ⁻¹→Xⁿ), Thms. 1–3, causal conditioning |
 
 ### Other privacy definitions and attacks
@@ -114,7 +118,7 @@ isn't formalized.
 | Braun, Chatzikokolakis, Palamidessi, *Quantitative notions of leakage for one-try attacks*, MFPS 2009 | `QIF/MinEntropy.lean` | Defs. 4.1–4.4, Prop. 5.1 (min-capacity = maximal leakage), Prop. 6.4, Cor. 6.5, Prop. 7.1 |
 | Alvim, Chatzikokolakis, Palamidessi, Smith, *Measuring information leakage using generalized gain functions*, CSF 2012 | `QIF/GainFunctions.lean` | Prop. 3.1, Thms. 4.1–4.2, Miracle theorem, Cor. 5.2, Thms. 5.3, 6.2 |
 | Alvim, Chatzikokolakis, McIver, Morgan, Palamidessi, Smith, *Additive and multiplicative notions of leakage, and their capacities*, CSF 2014 | `QIF/GainFunctions.lean` | Thm. 10, §VI-C, Thm. 17 (closed form), Lemmas 19–20, Thm. 21, Cors. 22–23 |
-| Duchi, Jordan, Wainwright, *Local privacy, data processing inequalities, and minimax rates* ([arXiv:1302.3203](https://arxiv.org/abs/1302.3203)) | `LocalPrivacy/` | Thm. 1, Lemmas 3–4, Cor. 1, eq. (14), Thm. 2, MI step of Cor. 3 |
+| Duchi, Jordan, Wainwright, *Local privacy, data processing inequalities, and minimax rates* ([arXiv:1302.3203](https://arxiv.org/abs/1302.3203)) | `LocalPrivacy/` | Thm. 1, Lemmas 3–4, Cor. 1, eq. (14), Thm. 2, the MI step of Cor. 3 from the packing condition (17) via Pinsker |
 | Dong, Roth, Su, *Gaussian differential privacy* ([arXiv:1905.02383](https://arxiv.org/abs/1905.02383)) | `FDP/` | Trade-off functions, f-DP, Prop. 2.2 (necessity), post-processing, Prop. 2.5 ((ε,δ)-DP ⇔ f-DP), Props. 2.4, 2.11, 2.12 (⇒), group privacy (Thm. 2.14, f-part) |
 
 ### Leakage measures (Sankar–Kosut line and related)
@@ -194,6 +198,25 @@ reviewer and, where marked, by a Lean proof; details are in the module docstring
 - **Chatzikokolakis–Andrés–Bordenabe–Palamidessi**: the triangle inequality in §2 reads
   d(x,y) + d(y,x), and the proof of Prop. 3 writes x[i′] for x′[i].
 - **Cuff–Yu**, (43)–(44): X^{−1} for X^{−i}. **Wang–Ying–Zhang**, proof of (42): ≤ for ≥.
+- **Calmon et al.**, T-IT footnote 8: "if S is binary, perfect privacy is achievable iff S and X
+  are independent" is false when X has three or more values; the paper's own erasure example is
+  a counterexample (`exists_perfectPrivacy_of_card_lt`), and the claim holds for binary X
+  (`exists_perfectPrivacy_iff_compProd_eq_prod_of_card_eq_two`). Also: Cor. 2 (72) prints max for
+  min, which makes the bound trivial; ISIT Lemma 3 (3) prints min for max; and Cor. 1 writes I
+  where J is meant.
+- **Chaudhuri–Monteleoni–Sarwate**, proof of Cor. 1: it bounds ‖∇g‖ by (1/n)‖xₙ − x′ₙ‖, which
+  fails when the labels differ (checked numerically); the stated 2/(nΛ) still holds. Also eq. (16)
+  has the wrong sign, and the paper's "a strictly convex function has a unique minimum" omits
+  existence.
+- **Kairouz–Oh–Viswanath**: p. 17 says the δ's are "as in (6)", which is right only for δ = 0;
+  plus three index and labelling typos.
+- **Mironov**, Prop. 6 is stated for α ≥ 1, but its formula is undefined at α = 1 (the value there
+  is given separately).
+- **Nissim–Raskhodnikova–Smith**, proof of Lemma 2.6 (p. 9): the last equality of the display is
+  false for ε > 0, so the proof gives (ε, (1 + e^{ε/2})δ/2)-DP, which is what is proved here;
+  whether the stated (ε, δ) holds in general is open. In the proof of Lemma 2.9, "median ≤ d, so
+  ρ_{δ′} > d" does not follow (it fails for d = 1, δ > 2/e), ρ_δ should be ρ_{δ/2}, and the
+  dilation step bounds h′/h where h/h′ is needed; the d = 1 statement is proved.
 - **Shannon**, p. 681: the example prints P_E(M) = 1/n where P_M(E) = 1/n is meant; the
   key-count argument uses an implicit hypothesis (the fixed key has positive probability).
 - **Braun–Chatzikokolakis–Palamidessi**, Fig. 6 caption: 1/(2^k−2) = 1/2^(k−1) holds only
