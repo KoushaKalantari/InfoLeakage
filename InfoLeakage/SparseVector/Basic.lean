@@ -7,6 +7,7 @@ module
 
 public import InfoLeakage.DP.Basic
 public import InfoLeakage.DP.Laplace
+public import InfoLeakage.ForMathlib.MeasurableSum
 public import Mathlib.MeasureTheory.Group.LIntegral
 
 /-!
@@ -515,17 +516,6 @@ lemma isMarkovKernel_aboveThreshold (hf : Measurable f) (hb₁ : 0 < b₁) (hb�
   have := isMarkovKernel_laplaceMechanismPi hf hb₂
   exact Kernel.IsMarkovKernel.map _ measurable_firstAbove
 
-omit [Fintype ι] [LinearOrder ι] in
-/-- The output space of AboveThreshold has measurable singletons. -/
-lemma SparseVector.measurableSingletonClass_sum_unit [MeasurableSingletonClass ι] :
-    MeasurableSingletonClass (ι ⊕ Unit) :=
-  ⟨fun o ↦ by
-    rcases o with k | u
-    · rw [← image_singleton]
-      exact (measurableSet_singleton k).inl_image
-    · rw [← image_singleton]
-      exact (measurableSet_singleton u).inr_image⟩
-
 /-- AboveThreshold on a finite query sequence is `(ε₁ + ε₂)`-DP for sensitivity-`1` queries when
 the threshold noise scale satisfies `1 ≤ ε₁ b₁` and the query noise scale satisfies
 `2 ≤ ε₂ b₂`. With `b₁ = 1/ε₁`, `b₂ = 2/ε₂` and an arbitrary split `(ε₁, ε₂)` this is Theorem 4 of
@@ -539,7 +529,6 @@ theorem isEpsDP_aboveThreshold_of_le [MeasurableSingletonClass ι] {Adj : 𝒟 �
     (hf : Measurable f) (hb₁ : 0 < b₁) (hb₂ : 0 < b₂) (h₁ : 1 ≤ ε₁ * b₁) (h₂ : 2 ≤ ε₂ * b₂)
     (hAdj : ∀ ⦃x x'⦄, Adj x x' → ∀ i, |f x i - f x' i| ≤ 1) :
     IsEpsDP (aboveThreshold f T b₁ b₂) Adj (ε₁ + ε₂) := by
-  have := SparseVector.measurableSingletonClass_sum_unit (ι := ι)
   have := isMarkovKernel_aboveThreshold (T := T) hf hb₁ hb₂
   have := isProbabilityMeasure_laplaceMeasure T hb₁
   have := isMarkovKernel_laplaceMechanismPi hf hb₂

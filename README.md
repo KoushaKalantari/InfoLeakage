@@ -59,9 +59,9 @@ top of it.
 
 ## Status
 
-Main results of about fifty papers and books are formalized, mostly for finite alphabets; the
+Main results of about sixty papers and books are formalized, mostly for finite alphabets; the
 DP, Rényi DP, zCDP, mechanism and f-information results hold on general measurable spaces.
-About 35,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
+About 38,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
 script over the whole library). The library passes the Mathlib linters and `lake lint`. Each paper's statements were adversarially reviewed against the
 paper by a second AI reviewer, and every fix raised was applied: OpenAI Codex for the six leakage
 papers, and an independent Claude referee for everything else (Codex review of those is
@@ -84,6 +84,11 @@ isn't formalized.
 | Kairouz, Oh, Viswanath, *The composition theorem for differential privacy*, ICML 2015 / IEEE T-IT 2017 ([arXiv:1311.0776](https://arxiv.org/abs/1311.0776)) | `OptimalComposition/` | The canonical (ε,δ) pair; (ε,δ)-DP ⇔ post-processing of it (Thms. 2.1, 2.4, and 2.5 for the canonical pair, finite alphabets); the exact optimal k-fold composition (Thm. 3.3), non-adaptive and adaptive, with tightness |
 | Nissim, Raskhodnikova, Smith, *Smooth sensitivity and sampling in private data analysis*, STOC 2007 | `SmoothSensitivity/` | Local and smooth sensitivity, Lemma 2.3 (smallest smooth bound), admissible noise (Def. 2.5, d = 1), Lemma 2.6 (with the δ its proof gives), Lemma 2.9 and Cor. 2.4(2) for Laplace noise |
 | Chaudhuri, Monteleoni, Sarwate, *Differentially private empirical risk minimization*, JMLR 2011 ([arXiv:0912.0071](https://arxiv.org/abs/0912.0071)) | `PrivateERM/` | Lemma 1, Cor. 1 (sensitivity 2/(nΛ) of regularized ERM), Thm. 1 (output perturbation is ε-DP), Cor. 2 (logistic regression) |
+| Rogers, Roth, Ullman, Vadhan, *Privacy odometers and filters*, NeurIPS 2016 ([arXiv:1605.08294](https://arxiv.org/abs/1605.08294)) | `PrivacyFilter/` | Fully adaptive composition with adaptively chosen ε's; pointwise indistinguishability, filters and odometers (Defs. 2.2, 3.1, 3.2); Thm. 3.4 (basic-composition filter and odometer, pure DP) |
+| Durfee, Rogers, NeurIPS 2019 ([arXiv:1905.04273](https://arxiv.org/abs/1905.04273)); Cesar, Rogers, ALT 2021 ([arXiv:2004.07223](https://arxiv.org/abs/2004.07223)) | `BoundedRange/` | Bounded-range mechanisms (Def. 4.2), BR versus DP (Cor. 4.2, Lemma 2.1), the exponential mechanism is ε-BR (Lemma 4.3), η-BR ⇒ (η²/8)-zCDP, non-adaptive composition |
+| Balle, Barthe, Gaboardi, Hsu, Sato, AISTATS 2020 ([arXiv:1905.09982](https://arxiv.org/abs/1905.09982)); Asoodeh, Liao, Calmon, Kosut, Sankar, IEEE JSAIT 2021 ([arXiv:2008.06529](https://arxiv.org/abs/2008.06529)) | `RDPConversion/` | Improved RDP ⇒ (ε,δ)-DP conversion (Thm. 21), strictly better than Mironov's; Canonne–Kamath–Steinke's form; RDP ⇔ Hellinger bound (10)–(11); Lemma 1, (24) with optimality over ordered pairs, and (25); Remark 1 |
+| Canonne, Kamath, Steinke, *The discrete Gaussian for differential privacy*, NeurIPS 2020 ([arXiv:2004.00010](https://arxiv.org/abs/2004.00010)) | `DiscreteGaussian/` | Def. 1, Lemma 6, Prop. 5 (Rényi divergence, with equality), Thm. 4 (ε²/2-zCDP), Thm. 14 (vector version), Lemma 16, Cor. 17 |
+| Dwork, Feldman, Hardt, Pitassi, Reingold, Roth, STOC 2015 ([arXiv:1411.2664](https://arxiv.org/abs/1411.2664)); Bassily, Nissim, Smith, Steinke, Stemmer, Ullman, STOC 2016 ([arXiv:1511.02513](https://arxiv.org/abs/1511.02513)) | `Generalization/` | Differential privacy implies generalization: DFHPRR Lemma 6 and Cor. 7, BNSSSU Lemmas 3.1–3.2 (in expectation), and a high-probability transfer through max-information (finite alphabets) |
 | Chan, Shi, Song, *Private and continual release of statistics*, ACM TISSEC 2011; Dwork, Naor, Pitassi, Rothblum, STOC 2010 | `ContinualRelease/` | Privacy of the p-sum, simple, two-level and binary counting mechanisms (Obs. 1, §3.1, Thms. 3.1, 3.3, 3.5 corrected, with tightness) |
 
 ### Information measures
@@ -212,6 +217,10 @@ reviewer and, where marked, by a Lean proof; details are in the module docstring
   plus three index and labelling typos.
 - **Mironov**, Prop. 6 is stated for α ≥ 1, but its formula is undefined at α = 1 (the value there
   is given separately).
+- Smaller slips, each harmless: Rogers–Roth–Ullman–Vadhan Def. 3.1 quantifies over outcome sets
+  it never uses; Durfee–Rogers p. 12 states the bounded-range property with the quantifiers in
+  the wrong order; Balle et al. p. 12 prints log d for log δ; Bassily et al. Lemma 3.1 types the
+  algorithm on (𝒳ⁿ)^T instead of 𝒳ⁿ; Canonne–Kamath–Steinke's proof of Prop. 5 skips α = 1.
 - **Nissim–Raskhodnikova–Smith**, proof of Lemma 2.6 (p. 9): the last equality of the display is
   false for ε > 0, so the proof gives (ε, (1 + e^{ε/2})δ/2)-DP, which is what is proved here;
   whether the stated (ε, δ) holds in general is open. In the proof of Lemma 2.9, "median ≤ d, so
