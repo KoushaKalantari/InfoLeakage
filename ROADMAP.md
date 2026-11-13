@@ -52,6 +52,18 @@ f-information and Pinsker's inequality (Polyanskiy–Wu), semantic security for 
 (Bellare–Tessaro–Vardy), and directed information (Massey; Massey–Massey). Each was reviewed by an
 independent Claude referee; the Codex fidelity pass is still to run.
 
+**Done (2026-11-13).** Fifteen more papers: advanced composition (Dwork–Rothblum–Vadhan), the
+optimal composition theorem (Kairouz–Oh–Viswanath), the exact Gaussian mechanism (Balle–Wang),
+report noisy max and sparse vector (Dwork–Roth; Lyu–Su–Li), continual counting
+(Chan–Shi–Song), smooth sensitivity (Nissim–Raskhodnikova–Smith), private ERM by output
+perturbation (Chaudhuri–Monteleoni–Sarwate), reconstruction attacks (Dinur–Nissim), metric privacy
+and geo-indistinguishability (Chatzikokolakis et al.; Andrés et al.), Pufferfish
+(Kifer–Machanavajjhala), privacy breaches and the Bayesian semantics of DP
+(Evfimievski–Gehrke–Srikant; Kasiviswanathan–Smith), MI-DP and identifiability (Cuff–Yu;
+Wang–Ying–Zhang), perfect privacy (Calmon et al.), the Laplace mechanism in Rényi DP (Mironov),
+and Duchi–Jordan–Wainwright Cor. 3's MI step via Pinsker. Each was reviewed by an independent
+Claude referee; the Codex fidelity pass is still to run.
+
 **Next.** Fill gaps in the six papers:
 - α-leakage: monotonicity in α, quasi-convexity, Thms. 5–6.
 - MαbeL: the conditional and vector versions.
@@ -61,9 +73,10 @@ independent Claude referee; the Codex fidelity pass is still to run.
 Also connect the closed forms to Statlib's `renyiDiv`, and extend beyond finite alphabets.
 
 **M4 — bridges.** g-leakage and the miracle bound, local DP, maximal (α, β)-leakage, Pinsker's
-inequality, zCDP ⇔ RDP, and max-information ⇔ local DP are done. Remaining: use Pinsker to close
-Duchi–Jordan–Wainwright Cor. 3, Gaussian DP (μ-GDP), f-DP composition, advanced composition
-(Dwork–Rothblum–Vadhan) and the optimal composition theorem (Kairouz–Oh–Viswanath).
+inequality, zCDP ⇔ RDP, max-information ⇔ local DP, advanced and optimal composition, and the
+Pinsker step of Duchi–Jordan–Wainwright Cor. 3 are done. Remaining: Gaussian DP (μ-GDP) and f-DP
+composition, which need trade-off functions beyond finite alphabets; the Fano bound of DJW
+Cor. 3; Kairouz–Oh–Viswanath Thms. 3.4–3.5; smooth sensitivity beyond finite alphabets.
 
 **M5 — upstream.**
 - Generalize the definitions beyond finite alphabets.
