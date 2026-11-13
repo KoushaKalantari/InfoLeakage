@@ -1,5 +1,6 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+public import InfoLeakage.AdvancedComposition.Basic
 public import InfoLeakage.AlphaBetaLeakage.Basic
 public import InfoLeakage.AlphaLeakage.Basic
 public import InfoLeakage.AlphaLeakage.Maximal
@@ -7,6 +8,8 @@ public import InfoLeakage.AlphaLeakage.Operational
 public import InfoLeakage.AlphaLeakage.Properties
 public import InfoLeakage.Amplification.HockeyStick
 public import InfoLeakage.Amplification.Subsampling
+public import InfoLeakage.AnalyticGaussian.Basic
+public import InfoLeakage.ContinualRelease.Basic
 public import InfoLeakage.DP.Basic
 public import InfoLeakage.DP.Exponential
 public import InfoLeakage.DP.Geometric
@@ -26,16 +29,25 @@ public import InfoLeakage.MaximalLeakage.Basic
 public import InfoLeakage.MaximalLeakage.MutualInfo
 public import InfoLeakage.MaximalLeakage.Operational
 public import InfoLeakage.MaximalLeakage.Properties
+public import InfoLeakage.MetricPrivacy.Basic
+public import InfoLeakage.MetricPrivacy.Laplace
+public import InfoLeakage.MutualInfoDP.Basic
+public import InfoLeakage.MutualInfoDP.Identifiability
 public import InfoLeakage.PerfectSecrecy.Basic
 public import InfoLeakage.PerfectSecrecy.Keys
 public import InfoLeakage.PointwiseLeakage.Basic
 public import InfoLeakage.PointwiseLeakage.InfoPrivacy
 public import InfoLeakage.PointwiseLeakage.Operational
+public import InfoLeakage.PrivacyBreach.Amplification
+public import InfoLeakage.PrivacyBreach.Semantic
+public import InfoLeakage.Pufferfish.Basic
 public import InfoLeakage.QIF.GainFunctions
 public import InfoLeakage.QIF.Links
 public import InfoLeakage.QIF.MinEntropy
+public import InfoLeakage.Reconstruction.Basic
 public import InfoLeakage.RenyiDP.Basic
 public import InfoLeakage.RenyiInfinity.Basic
 public import InfoLeakage.SemanticSecurity.Basic
+public import InfoLeakage.SparseVector.Basic
 public import InfoLeakage.ZCDP.Basic
 public import InfoLeakage.ZCDP.RenyiDP

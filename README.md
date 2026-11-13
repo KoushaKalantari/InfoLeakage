@@ -1,9 +1,13 @@
 # InfoLeakage
 
 Machine-checked mathematics of privacy and information leakage in Lean 4. Differential privacy:
-pure and approximate DP with post-processing, group privacy and composition, the standard
-mechanisms (randomized response, Laplace, geometric, exponential), Rényi DP, zero-concentrated DP,
-f-DP and amplification by subsampling. Information measures: perfect secrecy, min-entropy and
+pure and approximate DP with post-processing, group privacy, basic and advanced composition, the
+standard mechanisms (randomized response, Laplace, geometric, exponential, Gaussian with its exact
+privacy profile, report noisy max, sparse vector, continual counting), Rényi DP,
+zero-concentrated DP, f-DP and amplification by subsampling. Related privacy definitions and
+attacks: metric privacy and geo-indistinguishability, Pufferfish, privacy breaches and the
+Bayesian semantics of DP, mutual-information DP and identifiability, and reconstruction attacks.
+Information measures: perfect secrecy, min-entropy and
 g-leakage, maximal leakage, pointwise maximal leakage, max-information, information privacy,
 Sibson/Arimoto α-mutual information, α-leakage, f-information with Pinsker's inequality, local
 privacy, semantic security for the wiretap channel, and directed information. Built on
@@ -55,10 +59,10 @@ top of it.
 
 ## Status
 
-Main results of about thirty papers and books are formalized, mostly for finite alphabets; the
-DP, Rényi DP, zCDP and f-information results hold on general measurable spaces. About 22,000
-lines; no `sorry`. All 1,825 declarations use only Lean's standard axioms. The library passes the
-Mathlib linters and `lake lint`. Each paper's statements were adversarially reviewed against the
+Main results of about forty-five papers and books are formalized, mostly for finite alphabets;
+the DP, Rényi DP, zCDP, mechanism and f-information results hold on general measurable spaces.
+About 30,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
+script over the whole library). The library passes the Mathlib linters and `lake lint`. Each paper's statements were adversarially reviewed against the
 paper by a second AI reviewer, and every fix raised was applied: OpenAI Codex for the six leakage
 papers, and an independent Claude referee for everything else (Codex review of those is
 pending). Module docstrings map each paper result to its Lean name and say exactly what is and
@@ -74,6 +78,10 @@ isn't formalized.
 | Bun, Steinke, *Concentrated differential privacy*, TCC 2016 ([arXiv:1605.02065](https://arxiv.org/abs/1605.02065)) | `ZCDP/` | Def. 1.1, Lemmas 1.7–1.8, 2.3–2.4, 3.2, 3.5, Props. 1.3, 1.4, 1.6 (Gaussian mechanism); k-fold composition bound; zCDP ⇔ RDP at every order |
 | Dong, Roth, Su, *Gaussian differential privacy* ([arXiv:1905.02383](https://arxiv.org/abs/1905.02383)) | `FDP/` | See the landmark table below |
 | Balle, Barthe, Gaboardi, *Privacy amplification by subsampling*, NeurIPS 2018 ([arXiv:1807.01647](https://arxiv.org/abs/1807.01647)) | `Amplification/` | Hockey-stick divergence, Thm. 1 ((ε,δ)-DP ⇔ hockey-stick bound), Thm. 2 (advanced joint convexity), Thms. 8–9 (Poisson subsampling, sampling without replacement), Thm. 13 (tightness) |
+| Dwork, Rothblum, Vadhan, *Boosting and differential privacy*, FOCS 2010; Dwork–Roth Thm. 3.20, Cor. 3.21 | `AdvancedComposition/` | Advanced composition of ε-DP mechanisms, adaptive and non-adaptive, via zCDP (with the sharper kε²/2 term); Cor. 3.21 under δ′ ≤ e^{−ε′/8} |
+| Balle, Wang, *Improving the Gaussian mechanism for differential privacy*, ICML 2018 ([arXiv:1805.06530](https://arxiv.org/abs/1805.06530)); Dong–Roth–Su Cor. 2.13; Dwork–Roth Thm. A.1 | `AnalyticGaussian/` | Exact privacy profile of the Gaussian mechanism (Thm. 8, Lemma 6, Thm. 5), Thms. 1, 2, 4 (corrected), Lemmas 3, 7; classical calibration (scalar queries) |
+| Dwork–Roth Claim 3.9, Thm. 3.23; Lyu, Su, Li, *Understanding the sparse vector technique*, VLDB 2017 ([arXiv:1603.01699](https://arxiv.org/abs/1603.01699)) | `SparseVector/` | Report noisy max; AboveThreshold (fixed query sequence); Lyu–Su–Li Thm. 4 (c = 1) and Thm. 3 (the variant without query noise is not DP) |
+| Chan, Shi, Song, *Private and continual release of statistics*, ACM TISSEC 2011; Dwork, Naor, Pitassi, Rothblum, STOC 2010 | `ContinualRelease/` | Privacy of the p-sum, simple, two-level and binary counting mechanisms (Obs. 1, §3.1, Thms. 3.1, 3.3, 3.5 corrected, with tightness) |
 
 ### Information measures
 
@@ -86,6 +94,16 @@ isn't formalized.
 | Polyanskiy, Wu, *Information Theory: From Coding to Learning*, 2024, Ch. 7; Csiszár 1972 | `FInformation/` | **Pinsker's inequality** (Thm. 7.10) on general measurable spaces; χ²-divergence and KL ≤ log(1 + χ²) (7.34); f-information (7.46) with data processing (Thm. 7.16); TV-, χ²- and Hellinger-type information |
 | Bellare, Tessaro, Vardy, *A cryptographic treatment of the wiretap channel* (CRYPTO 2012; [arXiv:1201.2205](https://arxiv.org/abs/1201.2205)) | `SemanticSecurity/` | Semantic, distinguishing (formula and game) and mutual-information security; Thm. 4.1 (SS ⇔ DS), Thm. 4.5 (MIS ⇒ DS), Thm. 4.9 (DS ⇒ MIS), Lemmas 4.3–4.8 (incl. a finite-alphabet Pinsker), and the asymptotic implications between the security notions |
 | Massey, *Causality, feedback and directed information*, ISITA 1990; Massey, Massey, ISIT 2005 | `DirectedInfo/` | Directed information, the conservation law I(Xⁿ;Yⁿ) = I(Xⁿ→Yⁿ) + I(0∗Yⁿ⁻¹→Xⁿ), Thms. 1–3, causal conditioning |
+
+### Other privacy definitions and attacks
+
+| Paper | Directory | Formalized |
+|---|---|---|
+| Dinur, Nissim, *Revealing information while preserving privacy*, PODS 2003; Dwork–Roth Ch. 8 | `Reconstruction/` | Reconstruction from answers within E (Thm. 8.1, 4E bound); o(n) error ⇒ blatant non-privacy (DN Thm. 2, running time not modelled); DP mechanisms are not blatantly non-private |
+| Chatzikokolakis, Andrés, Bordenabe, Palamidessi, *Broadening the scope of differential privacy using metrics*, PETS 2013; Andrés et al., *Geo-indistinguishability*, CCS 2013 ([arXiv:1212.1984](https://arxiv.org/abs/1212.1984)) | `MetricPrivacy/` | d-privacy (Def. 1), DP ⇔ ε·d_H-privacy, Lemma 2, Fact 5, Thm. 6, Prop. 3, Laplace mechanisms for any metric (Fact 7), geo-indistinguishability, planar Laplace (normalization ε²/2π) |
+| Kifer, Machanavajjhala, *Pufferfish: a framework for mathematical privacy definitions*, ACM TODS 2014 | `Pufferfish/` | Def. 3.4, odds-ratio semantics, Thms. 3.1, 5.1, 6.1 (DP ⇔ Pufferfish under independent priors), Lemma D.1 and Thm. 6.2 (corrected) |
+| Evfimievski, Gehrke, Srikant, *Limiting privacy breaches*, PODS 2003; Kasiviswanathan, Smith, *On the 'semantics' of differential privacy* ([arXiv:0803.3946](https://arxiv.org/abs/0803.3946)) | `PrivacyBreach/` | Privacy breaches, γ-amplification (Statement 1) ⇔ local DP; semantic privacy, Thm. 2.2 (sharper 1 − e^{−ε}), Thm. 2.4(2) (repaired) |
+| Cuff, Yu, *Differential privacy as a mutual information constraint*, CCS 2016 ([arXiv:1608.03677](https://arxiv.org/abs/1608.03677)); Wang, Ying, Zhang, IEEE T-IT 2016 ([arXiv:1402.3757](https://arxiv.org/abs/1402.3757)) | `MutualInfoDP/` | MI-DP and KL-DP, Property 1, Lemmas 1–2, Thm. 1 (ε-DP ≻ MI-DP ≻ (ε,δ)-DP); identifiability, Lemmas 1–3, 5, eq. (25), Thm. 1 (19) and the lower bound in (18) |
 
 ### Landmark papers
 
@@ -112,9 +130,33 @@ isn't formalized.
 
 ### What the formalization found
 
-No formalized theorem turned out to be false. Formalizing did surface these issues in the
-papers' text, each confirmed by an independent reviewer and, where marked, by a Lean proof;
-details are in the module docstrings.
+Five published theorems or corollaries are false as written. Each is a wrong constant or a
+degenerate edge case, each has a counterexample checked in Lean, and a corrected version is proved
+here:
+
+- **Kasiviswanathan–Smith**, Thm. 2.4(2): "(ε/2, δ)-semantic privacy ⇒ (3ε, 2δ)-DP" fails for
+  randomized response on one bit (`not_forall_isDP_of_isEpsDeltaSemanticPrivate`); the repair
+  (6ε for ε ≤ 0.225) is proved. The proof of Thm. 2.2 also drops a factor 1/2 in one step; that
+  theorem holds.
+- **Chan–Shi–Song**, Thm. 3.5: the binary mechanism's noise ε/log T is too small, because an item
+  lies in ⌊log₂ T⌋ + 1 p-sums, not log T; the privacy level is off by a factor of at most 2. Lean
+  shows the failure for every T (`not_isEpsDP_binaryMechanism`) and proves the corrected noise
+  (⌊log₂ T⌋ + 1)/ε, which is tight. Dwork–Naor–Pitassi–Rothblum use the right count.
+- **Balle–Wang**, Thm. 4: an equality in its proof (p. 16) carries a spurious factor e^{−3ε};
+  Lean counterexample at ε = 1, δ = 0.47, σ = 2Δ/3
+  (`not_forall_div_sqrt_le_of_isEpsDeltaDP_gaussianReal`). The theorem holds with δ below
+  1/2 − 1/√(4πε).
+- **Kifer–Machanavajjhala**, Thm. 6.2 and Lemma D.1: a prior under which some individuals are
+  present with certainty adds no Pufferfish constraint, so enlarging the independent priors by it
+  keeps the definition equivalent to DP (`Pufferfish.exists_not_subset_indepPriors_isPufferfish_iff`).
+  Thm. 6.2 is proved under the positivity assumption that the proof needs.
+- **Dwork–Roth**, Cor. 3.21: needs δ′ ≤ e^{−ε′/8}; there is a counterexample with δ′ near 1
+  (`exists_not_isEpsDeltaDP_adaptiveCompose`). Its proof uses kε² where Thm. 3.20 gives
+  kε(e^ε − 1). Example 3.7 attributes its numbers to Thm. 3.20, which gives ε′ ≈ 1.014, not 1;
+  the example's conclusion is still true by optimal composition (checked numerically).
+
+Formalizing also surfaced these issues in the papers' text, each confirmed by an independent
+reviewer and, where marked, by a Lean proof; details are in the module docstrings.
 
 - **Dwork–Feldman–Hardt–Pitassi–Reingold–Roth**, Lemma 14 (composition of max-information): the
   last equality of the proof is false in general; a three-point counterexample is checked in
@@ -144,6 +186,14 @@ details are in the module docstrings.
   can be replaced by 1, and Thm. 2's divided by 4; both follow in one line from the paper's own
   steps.
 - **Dong–Roth–Su**, proof of Prop. 2.2 (App. A): two typos in the convexity step.
+- **Dinur–Nissim**, proof of Thm. 2 (p. 205): "q₁, q₂" should read "q₀, q₁", and "size 2E+1 or
+  more" needs 2E to be an integer; the proof only uses |q₁| > 2E.
+- **Dwork–Roth**, Claim 3.9 and Thm. 3.23: the proof of the first takes a minimum over an open
+  half-line, and the proof of the second omits the all-⊥ output; both results hold. The proof of
+  Thm. 3.20 has three typos (ε₀, δ for δ′, V⁰‖W for V⁰‖V¹).
+- **Chatzikokolakis–Andrés–Bordenabe–Palamidessi**: the triangle inequality in §2 reads
+  d(x,y) + d(y,x), and the proof of Prop. 3 writes x[i′] for x′[i].
+- **Cuff–Yu**, (43)–(44): X^{−1} for X^{−i}. **Wang–Ying–Zhang**, proof of (42): ≤ for ≥.
 - **Shannon**, p. 681: the example prints P_E(M) = 1/n where P_M(E) = 1/n is meant; the
   key-count argument uses an implicit hypothesis (the fixed key has positive probability).
 - **Braun–Chatzikokolakis–Palamidessi**, Fig. 6 caption: 1/(2^k−2) = 1/2^(k−1) holds only
