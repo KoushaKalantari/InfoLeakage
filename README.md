@@ -34,17 +34,24 @@ submitted as pull requests (design discussion:
 flowchart TB
   S["<b>stat-lib/statlib</b><br/>KL, Rényi and f-divergences, mutual information,<br/>total variation, Markov kernels"]
   I["<b>InfoLeakage</b> (this repository)<br/>about 22,000 lines, about 30 papers:<br/>leakage measures, DP, Rényi DP, zCDP, subsampling, ..."]
-  F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>branch maximal-leakage: 952 lines, 1 paper<br/>branch leakage-measures: 6,378 lines, 6 papers, not yet submitted"]
+  F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>branch maximal-leakage: 952 lines, 1 paper<br/>five branches stacked on it: one paper each"]
   S -- "dependency (pinned commit, unmodified)" --> I
   S -- "fork" --> F
   I -- "code ported into Statlib's layout" --> F
-  F -- "PR #79: branch maximal-leakage" --> S
+  F -- "PR #79, then draft PRs #82–#86" --> S
 ```
 
-- [stat-lib/statlib#79](https://github.com/stat-lib/statlib/pull/79) proposes maximal leakage
-  (Issa–Wagner–Kamath) as `Statlib/Divergence/MaximalLeakage/`.
-- Branch [`leakage-measures`](https://github.com/KoushaKalantari/statlib/tree/leakage-measures)
-  adds the other five leakage papers under `Statlib/Divergence/` and `Statlib/Privacy/`.
+The leakage measures go to Statlib as a stack: #79 first, and each later PR adds one paper on
+top of it.
+
+| PR | Adds | Paper |
+|---|---|---|
+| [#79](https://github.com/stat-lib/statlib/pull/79) | `Divergence/MaximalLeakage/` | Issa–Wagner–Kamath |
+| [#82](https://github.com/stat-lib/statlib/pull/82) (draft) | `Divergence/AlphaLeakage/` | Liao–Kosut–Sankar–Calmon |
+| [#83](https://github.com/stat-lib/statlib/pull/83) (draft) | `Divergence/RenyiInfinity/` | Kurri–Kosut–Sankar |
+| [#84](https://github.com/stat-lib/statlib/pull/84) (draft) | `Divergence/GainLeakage/` | Kurri–Sankar–Kosut |
+| [#85](https://github.com/stat-lib/statlib/pull/85) (draft) | `Divergence/AlphaBetaLeakage/` | Gilani–Kurri–Kosut–Sankar |
+| [#86](https://github.com/stat-lib/statlib/pull/86) (draft) | `Privacy/DPHamming/` | Kalantari–Sankar–Sarwate |
 
 ## Status
 
