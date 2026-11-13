@@ -42,6 +42,16 @@ Braun–Chatzikokolakis–Palamidessi (2009), Alvim et al. (CSF 2012, CSF 2014),
 Duchi–Jordan–Wainwright, and Dong–Roth–Su. Findings are listed in the README. Codex fidelity
 review of these is still to run.
 
+**Done (2026-11-12, later).** Coverage broadened to core DP (Dwork–Roth: post-processing, group
+privacy, composition, parallel composition), the standard mechanisms (randomized response,
+Laplace, geometric, exponential), Rényi DP (Mironov), zCDP (Bun–Steinke, incl. the Gaussian
+mechanism), amplification by subsampling (Balle–Barthe–Gaboardi), max-information
+(Dwork–Feldman–Hardt–Pitassi–Reingold–Roth), DP ⇒ min-entropy leakage (Alvim et al.), pointwise
+maximal leakage (Saeidian et al.), information privacy (du Pin Calmon–Fawaz; Jiang–Li–Tandon),
+f-information and Pinsker's inequality (Polyanskiy–Wu), semantic security for the wiretap channel
+(Bellare–Tessaro–Vardy), and directed information (Massey; Massey–Massey). Each was reviewed by an
+independent Claude referee; the Codex fidelity pass is still to run.
+
 **Next.** Fill gaps in the six papers:
 - α-leakage: monotonicity in α, quasi-convexity, Thms. 5–6.
 - MαbeL: the conditional and vector versions.
@@ -50,9 +60,10 @@ review of these is still to run.
 
 Also connect the closed forms to Statlib's `renyiDiv`, and extend beyond finite alphabets.
 
-**M4 — bridges.** g-leakage and the miracle bound, local DP, and maximal (α, β)-leakage are
-done. Remaining: Pinsker's inequality (to close Duchi–Jordan–Wainwright Cor. 3), Gaussian DP,
-and f-DP composition.
+**M4 — bridges.** g-leakage and the miracle bound, local DP, maximal (α, β)-leakage, Pinsker's
+inequality, zCDP ⇔ RDP, and max-information ⇔ local DP are done. Remaining: use Pinsker to close
+Duchi–Jordan–Wainwright Cor. 3, Gaussian DP (μ-GDP), f-DP composition, advanced composition
+(Dwork–Rothblum–Vadhan) and the optimal composition theorem (Kairouz–Oh–Viswanath).
 
 **M5 — upstream.**
 - Generalize the definitions beyond finite alphabets.
