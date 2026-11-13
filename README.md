@@ -38,15 +38,15 @@ submitted as pull requests (design discussion:
 flowchart TB
   S["<b>stat-lib/statlib</b><br/>KL, Rényi and f-divergences, mutual information,<br/>total variation, Markov kernels"]
   I["<b>InfoLeakage</b> (this repository)<br/>about 22,000 lines, about 30 papers:<br/>leakage measures, DP, Rényi DP, zCDP, subsampling, ..."]
-  F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>branch maximal-leakage: 952 lines, 1 paper<br/>five branches stacked on it: one paper each"]
+  F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>leakage stack: 6 branches<br/>differential-privacy stack: 5 branches<br/>Pinsker's inequality: 1 branch"]
   S -- "dependency (pinned commit, unmodified)" --> I
   S -- "fork" --> F
   I -- "code ported into Statlib's layout" --> F
-  F -- "PR #79, then draft PRs #82–#86" --> S
+  F -- "PR #79 and draft PRs #82–#86, #88–#93" --> S
 ```
 
-The leakage measures go to Statlib as a stack: #79 first, and each later PR adds one paper on
-top of it.
+Two stacks and one standalone PR. In the leakage stack every later PR builds on #79; in the
+differential-privacy stack each PR builds on the one before it.
 
 | PR | Adds | Paper |
 |---|---|---|
@@ -56,6 +56,12 @@ top of it.
 | [#84](https://github.com/stat-lib/statlib/pull/84) (draft) | `Divergence/GainLeakage/` | Kurri–Sankar–Kosut |
 | [#85](https://github.com/stat-lib/statlib/pull/85) (draft) | `Divergence/AlphaBetaLeakage/` | Gilani–Kurri–Kosut–Sankar |
 | [#86](https://github.com/stat-lib/statlib/pull/86) (draft) | `Privacy/DPHamming/` | Kalantari–Sankar–Sarwate |
+| [#88](https://github.com/stat-lib/statlib/pull/88) (draft) | `Privacy/DP/Basic` | Dwork–Roth; McSherry |
+| [#89](https://github.com/stat-lib/statlib/pull/89) (draft) | `Privacy/DP/` mechanisms | Dwork–Roth Ch. 3; Warner; McSherry–Talwar; Ghosh–Roughgarden–Sundararajan |
+| [#90](https://github.com/stat-lib/statlib/pull/90) (draft) | `Privacy/RenyiDP/` | Mironov |
+| [#91](https://github.com/stat-lib/statlib/pull/91) (draft) | `Privacy/ZCDP/` | Bun–Steinke |
+| [#92](https://github.com/stat-lib/statlib/pull/92) (draft) | `Privacy/AdvancedComposition/` | Dwork–Rothblum–Vadhan |
+| [#93](https://github.com/stat-lib/statlib/pull/93) (draft) | `Divergence/Pinsker` | Pinsker; Polyanskiy–Wu |
 
 ## Status
 
