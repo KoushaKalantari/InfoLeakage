@@ -61,9 +61,12 @@ that use measure values assume finite kernels (basic API, post-processing) or Ma
 * Theorem B.1 (adaptive composition), with possibly different parameters for the two mechanisms:
   `IsEpsDeltaDP.compProd`, pure case `IsEpsDP.compProd`.
 * Parallel composition (F. McSherry, *Privacy integrated queries*, SIGMOD 2009, Theorem 4), for
-  **two parts**: adaptive `IsEpsDP.parallel_compProd`, and in McSherry's form for one dataset
-  `X : Set α` split as `(X ∩ D, X ∩ Dᶜ)`, `IsEpsDP.parallel_compProd_inter` (via
-  `DP.parallelAdj_inter_compl`); non-adaptive special case `IsEpsDP.parallel`. The `(ε, δ)`
+  **two parts**: adaptive `IsEpsDP.parallel_compProd`, and for one dataset `X : Set α` split as
+  `(X ∩ D, X ∩ Dᶜ)`, `IsEpsDP.parallel_compProd_inter` (via `DP.parallelAdj_inter_compl`). The
+  latter is the **duplicate-free** (datasets are sets, not PINQ's multisets),
+  **adjacent-dataset** (one added or removed record, not PINQ's guarantee for all pairs at a given
+  symmetric-difference distance), **complementary-bipartition** version of Theorem 4.
+  Non-adaptive special case `IsEpsDP.parallel`. The `(ε, δ)`
   versions `IsEpsDeltaDP.parallel_compProd` and `IsEpsDeltaDP.parallel`, giving
   `(max ε₁ ε₂, max δ₁ δ₂)`, extend PINQ, which treats pure DP only.
 
@@ -87,16 +90,20 @@ Theorem B.1 (see the notes below).
   additive: if `P - e^ε P'` is positive on `A` and negative on a disjoint `B`, then
   `μ(A ∪ B) < μ(A) + μ(B)`). The positive part of the Jordan decomposition of the signed measure
   `P(T₁ ∈ ·) - e^ε P'(T₁ ∈ ·)` is a measure of total mass at most `δ` satisfying (B.2), which
-  repairs the argument. The proof also integrates over `S₁`, the projection of `S` onto `C₁`,
-  which need not be measurable; integrating over all of `C₁` avoids this. The theorem is true
-  (`IsEpsDeltaDP.compProd`, proved without `μ`).
+  repairs the argument. The theorem is true (`IsEpsDeltaDP.compProd`, proved without `μ`).
+* The proof also integrates over `S₁`, the projection of `S` onto `C₁`. This is not a defect in
+  the book, which works with discrete probability spaces (p. 16), where every set is measurable;
+  it is only an obstacle to **generalizing** the proof to arbitrary measurable output spaces,
+  where such a projection need not be measurable. Integrating over all of `C₁` avoids it.
 
 ## Not formalized
 
 * The `k`-fold adaptive composition (Corollary B.2).
 * The link between "groups of size `k`" as chains of `k` neighbouring steps (`IsKNeighbour`) and
   the book's `‖x - y‖₁ ≤ k` on histograms.
-* McSherry's parallel composition for `k > 2` parts.
+* McSherry's parallel composition for `k > 2` parts, and the bridges from the two-part set
+  version to PINQ's setting: multiset datasets, and the guarantee for datasets at any
+  symmetric-difference distance.
 * Everything from Section 3.5.1 on (privacy loss, advanced composition, Theorem 3.20).
 -/
 
@@ -471,8 +478,9 @@ F. McSherry, *Privacy integrated queries*, SIGMOD 2009, Theorem 4: if `M_i` is `
 earlier outputs, is `max_i ε_i`-DP. We formalize the case of **two parts**. The dataset is
 modelled as the pair of its parts, with the relation `DP.ParallelAdj` (one part changes by a
 neighbouring step); `DP.parallelAdj_inter_compl` links this to one dataset `X : Set α` split as
-`(X ∩ D, X ∩ Dᶜ)`, and `IsEpsDP.parallel_compProd_inter` is the resulting statement in McSherry's
-form. -/
+`(X ∩ D, X ∩ Dᶜ)`, and `IsEpsDP.parallel_compProd_inter` is the resulting statement for one
+dataset: the duplicate-free (sets rather than PINQ's multisets), adjacent-dataset (rather than
+all-pairs symmetric-difference distance), complementary-bipartition version of Theorem 4. -/
 
 /-- The neighbouring relation on datasets `(S₁, S₂)` made of two disjoint parts: two such
 datasets are neighbours if they differ in exactly one part, by a neighbouring step there. -/
@@ -542,11 +550,13 @@ theorem IsEpsDP.parallel_compProd {M₁ : Kernel 𝒟₁ Y} {M₂ : Kernel (𝒟
       (DP.ParallelAdj Adj₁ Adj₂) (max ε₁ ε₂) := by
   simpa using IsEpsDeltaDP.parallel_compProd h₁ h₂
 
-/-- **McSherry's parallel composition for one dataset split in two** (SIGMOD 2009, Theorem 4 for
-two parts): for datasets `X : Set α` of records, neighbouring when they differ in one record
-(`DP.AddRemoveAdj`), and any `D : Set α`, releasing `y ∼ M₁(X ∩ D)` and then
-`M₂(X ∩ Dᶜ, y)` is `max ε₁ ε₂`-DP if `M₁` is `ε₁`-DP and each `M₂(·, y)` is `ε₂`-DP. Datasets
-carry Mathlib's σ-algebra `Set.instMeasurableSpace` on `Set α`. -/
+/-- **McSherry's parallel composition for one dataset split in two** (SIGMOD 2009, Theorem 4:
+the duplicate-free, adjacent-dataset, complementary-bipartition version): for datasets
+`X : Set α` of records, neighbouring when they differ in one record (`DP.AddRemoveAdj`), and any
+`D : Set α`, releasing `y ∼ M₁(X ∩ D)` and then `M₂(X ∩ Dᶜ, y)` is `max ε₁ ε₂`-DP if `M₁` is
+`ε₁`-DP and each `M₂(·, y)` is `ε₂`-DP. Datasets carry Mathlib's σ-algebra
+`Set.instMeasurableSpace` on `Set α`. PINQ's datasets are multisets and its guarantee covers all
+pairs of datasets at a given symmetric-difference distance; neither bridge is formalized here. -/
 theorem IsEpsDP.parallel_compProd_inter {α : Type*} (D : Set α)
     {M₁ : Kernel (Set α) Y}
     {M₂ : Kernel (Set α × Y) Z} [IsMarkovKernel M₁] [IsMarkovKernel M₂]

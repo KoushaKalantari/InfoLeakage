@@ -20,10 +20,11 @@ its basic-composition theorem from
 
 In round `n` of the game, an adversary chooses, as a function of the outputs of the earlier
 rounds (its *history*), a privacy parameter `ε n h` and an `ε n h`-DP mechanism, which is then run
-on the secret input. Since the parameters are random, the composed game is not `ε`-DP for any
-fixed `ε`; the paper introduces two ways to control its privacy loss. A *privacy filter* is a
-stopping rule that halts the game before a global budget `ε_g` is exceeded; a *privacy odometer*
-is a running bound on the realized privacy loss.
+on the secret input. Since the parameters are chosen adaptively, the composed game need not
+admit a uniform finite privacy guarantee without further restrictions; the paper introduces two
+ways to control its privacy loss. A *privacy filter* is a stopping rule that halts the game
+before a global budget `ε_g` is exceeded; a *privacy odometer* is a running bound on the realized
+privacy loss.
 
 ## Setting and modelling choices
 
@@ -51,10 +52,11 @@ is a running bound on the realized privacy loss.
   (`C e` means `CONT`). Before round `i` the filter is queried on `(ε₀, …, ε_i, 0, …, 0)`
   (`PrivacyFilter.paddedEps`). Once it answers `HALT`, this round and all later ones output `⊥`,
   which is `Sum.inr ()` in the output alphabet `Y ⊕ Unit` of the filtered game (Algorithm 3).
-* Point-wise indistinguishability (Definition 2.2) and the odometer event `|Loss(v)| > c` are
-  stated in multiplicative form, `e^ε ν{z} < μ{z}`; for outcomes of positive probability this is
-  exactly `log (μ{z} / ν{z}) > ε` (including the value `+∞` when `ν{z} = 0`), and outcomes of
-  probability zero do not affect the probability of the event.
+* The absolute-loss events `|log (μ{z} / ν{z})| > ε` of point-wise indistinguishability
+  (Definition 2.2) and of the odometer (Definition 3.2) are stated in multiplicative form,
+  `e^ε ν{z} < μ{z} ∨ e^ε μ{z} < ν{z}`; this is exact on the outcomes of positive `μ`- or
+  `ν`-probability (an infinite ratio counts as exceeding `ε`), and the outcomes of probability
+  zero under both do not affect the probabilities of the event.
 * The instance `MeasurableSingletonClass (Y ⊕ Unit)`, missing from Mathlib, is
   `Sum.instMeasurableSingletonClass` from `InfoLeakage.ForMathlib.MeasurableSum`.
 
@@ -73,7 +75,7 @@ is a running bound on the realized privacy loss.
 
 * `PrivacyFilter.adaptiveCompose_apply_singleton_le`: in an adaptive composition with
   history-dependent parameters, `P[V⁰ = v] ≤ exp (∑ᵢ εᵢ(v_{<i})) P[V¹ = v]` for every view `v`
-  (the inequality `|Loss(v)| ≤ ∑ᵢ εᵢ(v_{<i})` in the proof of Theorem 3.4).
+  (one side of the inequality `|Loss(v)| ≤ ∑ᵢ εᵢ(v_{<i})` in the proof of Theorem 3.4).
 * `PrivacyFilter.isPrivacyOdometer_sum`: **Theorem 3.4, first part**: `∑ εᵢ` is a valid privacy
   odometer for every `δ_g ≥ 0`.
 * `PrivacyFilter.isEpsDP_privacyFilterComp_basicFilter`: for every adversary, the game run with
@@ -143,11 +145,13 @@ private lemma adaptiveCompose_apply_singleton [MeasurableSingletonClass Z]
       (measurableSet_singleton _), lintegral_singleton, ih, Fin.prod_univ_castSucc, mul_comm]
     rfl
 
-/-- **The privacy loss of an adaptive composition is at most the sum of the realized
-parameters** (the inequality `|Loss(v)| ≤ ∑ᵢ εᵢ(v_{<i})` in the proof of Theorem 3.4 of
-Rogers–Roth–Ullman–Vadhan). If, in every round `n` and for every history `x`, the round-`n`
-output distributions on the inputs `S` and `S'` satisfy `P[N_n(S, x) = z] ≤ e^{ε n x}
-P[N_n(S', x) = z]`, then every view `v` of the `k`-fold adaptive composition satisfies
+/-- **One-sided bound on the privacy loss of an adaptive composition by the sum of the
+realized parameters** (the upper half of the inequality `|Loss(v)| ≤ ∑ᵢ εᵢ(v_{<i})` in the
+proof of Theorem 3.4 of Rogers–Roth–Ullman–Vadhan; the lower half is the same statement with `S`
+and `S'` swapped, which needs the hypothesis for the swapped inputs). If, in every round `n` and
+for every history `x`, the round-`n` output distributions on the inputs `S` and `S'` satisfy
+`P[N_n(S, x) = z] ≤ e^{ε n x} P[N_n(S', x) = z]`, then every view `v` of the `k`-fold adaptive
+composition satisfies
 `P[V(S) = v] ≤ exp (∑_{n < k} ε n (v₀, …, v_{n-1})) P[V(S') = v]`. -/
 theorem adaptiveCompose_apply_singleton_le [MeasurableSingletonClass Z]
     (N : (n : ℕ) → Kernel (𝒟 × (Fin n → Z)) Z) [∀ n, IsMarkovKernel (N n)]
@@ -206,8 +210,9 @@ def realizedEps (ε : (n : ℕ) → (Fin n → H) → ℝ) {k : ℕ} (v : Fin k 
   fun n ↦ ε n (Fin.take n n.isLt.le v)
 
 /-- **Privacy loss along a view of the adaptive-parameter game** (proof of Theorem 3.4 of
-Rogers–Roth–Ullman–Vadhan): for neighbouring `S, S'` and every view `v`,
-`P[V(S) = v] ≤ exp (∑ᵢ εᵢ(v_{<i})) P[V(S') = v]`. -/
+Rogers–Roth–Ullman–Vadhan), one-sided form: for neighbouring `S, S'` and every view `v`,
+`P[V(S) = v] ≤ exp (∑ᵢ εᵢ(v_{<i})) P[V(S') = v]`. Applied to `Adj S S'` and `Adj S' S`, it gives
+the absolute bound `|Loss(v)| ≤ ∑ᵢ εᵢ(v_{<i})`. -/
 theorem adaptParamComp_apply_singleton_le [MeasurableSingletonClass Y]
     (A : Adversary 𝒟 Y Y Adj) {S S' : 𝒟} (hS : Adj S S') (k : ℕ) (v : Fin k → Y) :
     adaptParamComp A k S {v} ≤
@@ -250,20 +255,17 @@ theorem isPrivacyOdometer_sum [Countable Y] [MeasurableSingletonClass Y] (k : �
 
 /-- **`(ε, δ)`-point-wise indistinguishability** (Definition 2.2 of Rogers–Roth–Ullman–Vadhan),
 for probability measures on a countable alphabet with measurable singletons: with probability at
-least `1 - δ` over `z ∼ μ`, `log (μ{z} / ν{z}) ≤ ε`, and with probability at least `1 - δ` over
-`z ∼ ν`, `log (ν{z} / μ{z}) ≤ ε`. The event `log (μ{z} / ν{z}) > ε` is written
-`e^ε ν{z} < μ{z}`, which agrees with it on the outcomes of positive `μ`-probability.
-
-This differs from the literal text of Definition 2.2, which bounds `log (μ{z} / ν{z}) ≤ ε` both
-under `z ∼ μ` and under `z ∼ ν`: here the ratio is reversed under `ν`, which is the two-sided
-form of Kasiviswanathan–Smith [KS14]. For `ε ≥ 0` the two readings agree inside Definition 3.1,
-which quantifies over both orders `(b, 1 - b)`: the literal clause under `ν` then follows from
-the clause under `μ`, as `ν(E) ≤ e^{-ε} μ(E)` on the event `E = {z | e^ε ν{z} < μ{z}}`. -/
+least `1 - δ` over `z ∼ μ`, and also with probability at least `1 - δ` over `z ∼ ν`,
+`|log (μ{z} / ν{z})| ≤ ε`. The event `|log (μ{z} / ν{z})| > ε` is written
+`e^ε ν{z} < μ{z} ∨ e^ε μ{z} < ν{z}`, which agrees with it on the outcomes of positive `μ`- or
+`ν`-probability. -/
 @[nolint unusedArguments]
 def IsPointwiseIndist [Countable Z] [MeasurableSingletonClass Z] (μ ν : Measure Z)
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] (ε δ : ℝ) : Prop :=
-  μ.real {z | ENNReal.ofReal (exp ε) * ν {z} < μ {z}} ≤ δ ∧
-    ν.real {z | ENNReal.ofReal (exp ε) * μ {z} < ν {z}} ≤ δ
+  μ.real {z | ENNReal.ofReal (exp ε) * ν {z} < μ {z} ∨ ENNReal.ofReal (exp ε) * μ {z} < ν {z}} ≤
+      δ ∧
+    ν.real {z | ENNReal.ofReal (exp ε) * ν {z} < μ {z} ∨ ENNReal.ofReal (exp ε) * μ {z} < ν {z}} ≤
+      δ
 
 /-- The vector `(ε₀, …, ε_i, 0, …, 0) : Fin k → ℝ` of the parameters chosen in rounds `0, …, i`
 along the history `h` of length `n ≥ i`, padded with zeros; the parameter of round `j` is
@@ -441,10 +443,17 @@ theorem isPrivacyFilter_basicFilter [Countable Y] [MeasurableSingletonClass Y] (
     IsPrivacyFilter Y (basicFilter k εg) εg δg := by
   intro A b
   have hb : b ≠ !b := by cases b <;> decide
-  refine ⟨(measureReal_mono (s₂ := ∅) (fun v hv ↦ ?_) (by simp)).trans (by simpa using hδg),
-    (measureReal_mono (s₂ := ∅) (fun v hv ↦ ?_) (by simp)).trans (by simpa using hδg)⟩
-  · exact ((privacyFilterComp_basicFilter_apply_singleton_le A hεg hb v).not_gt hv).elim
-  · exact ((privacyFilterComp_basicFilter_apply_singleton_le A hεg hb.symm v).not_gt hv).elim
+  have hE (v : Fin k → Y ⊕ Unit) : ¬ (ENNReal.ofReal (exp εg) *
+      privacyFilterComp A (basicFilter k εg) (!b) {v} <
+        privacyFilterComp A (basicFilter k εg) b {v} ∨
+      ENNReal.ofReal (exp εg) * privacyFilterComp A (basicFilter k εg) b {v} <
+        privacyFilterComp A (basicFilter k εg) (!b) {v}) := by
+    rintro (hv | hv)
+    · exact (privacyFilterComp_basicFilter_apply_singleton_le A hεg hb v).not_gt hv
+    · exact (privacyFilterComp_basicFilter_apply_singleton_le A hεg hb.symm v).not_gt hv
+  exact ⟨(measureReal_mono (s₂ := ∅) (fun v hv ↦ (hE v hv).elim) (by simp)).trans
+      (by simpa using hδg),
+    (measureReal_mono (s₂ := ∅) (fun v hv ↦ (hE v hv).elim) (by simp)).trans (by simpa using hδg)⟩
 
 end PrivacyFilter
 

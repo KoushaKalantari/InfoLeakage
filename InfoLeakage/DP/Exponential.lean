@@ -29,9 +29,11 @@ Privacy is measured with `IsEpsDeltaDP` from `InfoLeakage.FDP.Basic` at `δ = 0`
 `ε`-differential privacy) for an arbitrary neighbouring relation `Adj` on datasets. The
 sensitivity is a hypothesis: `Δ > 0` is any upper bound on `|u(x, r) - u(x', r)|` over
 neighbouring `x, x'` and all `r` (Dwork–Roth use the exact sensitivity `Δu`, the smallest such
-bound). The dataset space `𝒟` is an arbitrary measurable space, and the scores `x ↦ u(x, r)`
-are assumed measurable, so that the construction is the mechanism of Definition 3.4
-(`exponentialMechanism_apply`).
+bound). The dataset space `𝒟` is an arbitrary measurable space, `R` is assumed nonempty, and
+the scores `x ↦ u(x, r)` are assumed measurable, so that the construction is the mechanism of
+Definition 3.4 (`exponentialMechanism_apply`, `isMarkovKernel_exponentialMechanism`). When the
+density is not jointly measurable, or `R` is empty, the `Kernel.withDensity` construction
+degenerates to the zero kernel (see `exponentialMechanism`).
 
 ## Main definitions
 
@@ -41,10 +43,10 @@ are assumed measurable, so that the construction is the mechanism of Definition 
 
 ## Main statements (source result → Lean name)
 
-* The exponential mechanism is a Markov kernel when the scores are measurable in the dataset:
-  `isMarkovKernel_exponentialMechanism`.
-* Theorem 3.10 (privacy): `isEpsDeltaDP_exponentialMechanism`, via the pointwise likelihood-ratio
-  bound `exponentialMechanismProb_le_exp_mul`.
+* The exponential mechanism is a Markov kernel when `R` is nonempty and the scores are
+  measurable in the dataset: `isMarkovKernel_exponentialMechanism`.
+* Theorem 3.10 (privacy, for nonempty `R`): `isEpsDeltaDP_exponentialMechanism`, via the
+  pointwise likelihood-ratio bound `exponentialMechanismProb_le_exp_mul`.
 * The key estimate in the proof of Theorem 3.11,
   `P[u(x, M(x)) ≤ c] ≤ (|R| / |R_OPT|) exp (ε (c - OPT_u(x)) / (2Δ))`:
   `exponentialMechanism_real_le`.
@@ -174,9 +176,18 @@ variable [MeasurableSpace 𝒟] [MeasurableSpace R] [MeasurableSingletonClass R]
 
 /-- **The exponential mechanism** `M_E(x, u, R)` (Dwork–Roth, Definition 3.4, after
 McSherry–Talwar): on dataset `x`, output `r ∈ R` with probability proportional to
-`exp (ε u(x, r) / (2Δ))`. It is the measure with density `exponentialMechanismProb u ε Δ x` with
-respect to the counting measure on the finite set `R`. It is a Markov kernel as soon as `R` is
-nonempty and each score `x ↦ u(x, r)` is measurable (`isMarkovKernel_exponentialMechanism`). -/
+`exp (ε u(x, r) / (2Δ))`. It is built as `Kernel.withDensity` of the constant counting-measure
+kernel with density `(x, r) ↦ exponentialMechanismProb u ε Δ x r`. This describes the intended
+distribution only under two conditions:
+* the **density** is jointly measurable (`Kernel.withDensity` returns the **zero kernel**
+  otherwise). Measurability of each score `x ↦ u(x, r)` suffices (`exponentialMechanism_apply`),
+  but the test is on the density, not on the raw scores: a non-measurable offset added to all
+  scores cancels in the normalization;
+* `R` is nonempty, so that the normalizing sum is positive and the masses sum to one (for empty
+  `R` the kernel is zero).
+
+Under both it is a Markov kernel (`isMarkovKernel_exponentialMechanism`, stated with the
+sufficient condition that the scores are measurable). -/
 noncomputable def exponentialMechanism (u : 𝒟 → R → ℝ) (ε Δ : ℝ) : Kernel 𝒟 R :=
   (Kernel.const 𝒟 Measure.count).withDensity
     fun x r ↦ ENNReal.ofReal (exponentialMechanismProb u ε Δ x r)
@@ -219,11 +230,16 @@ lemma isMarkovKernel_exponentialMechanism [Nonempty R] (hu : ∀ r, Measurable f
     ENNReal.ofReal_sum_of_nonneg fun r _ ↦ exponentialMechanismProb_nonneg u ε Δ x r]
   simp
 
-/-- **Dwork–Roth, Theorem 3.10** (after McSherry–Talwar): the exponential mechanism is
-`(ε, 0)`-differentially private, for `ε ≥ 0` and any bound `Δ > 0` on the sensitivity of the
-score, `|u(x, r) - u(x', r)| ≤ Δ` for all neighbouring `x, x'` and all `r ∈ R`. The scores are
-assumed measurable in the dataset. -/
-theorem isEpsDeltaDP_exponentialMechanism {Adj : 𝒟 → 𝒟 → Prop}
+/-- **Dwork–Roth, Theorem 3.10** (after McSherry–Talwar): the exponential mechanism on a
+nonempty finite range `R` is `(ε, 0)`-differentially private, for `ε ≥ 0` and any bound `Δ > 0`
+on the sensitivity of the score, `|u(x, r) - u(x', r)| ≤ Δ` for all neighbouring `x, x'` and all
+`r ∈ R`. The scores are assumed measurable in the dataset, so that together with `[Nonempty R]`
+the kernel is the randomized mechanism of Definition 3.4 (`isMarkovKernel_exponentialMechanism`);
+for empty `R` the kernel is zero and the inequality would be vacuous. The proof does not use
+`[Nonempty R]`; the general kernel inequality behind it is
+`ExponentialMechanism.isEpsDeltaDP_withDensity_const`. -/
+@[nolint unusedArguments]
+theorem isEpsDeltaDP_exponentialMechanism [Nonempty R] {Adj : 𝒟 → 𝒟 → Prop}
     (hu : ∀ r, Measurable fun x ↦ u x r) (hε : 0 ≤ ε) (hΔ : 0 < Δ)
     (hΔu : ∀ ⦃x x'⦄, Adj x x' → ∀ r, |u x r - u x' r| ≤ Δ) :
     IsEpsDeltaDP (exponentialMechanism u ε Δ) Adj ε 0 := by

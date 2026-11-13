@@ -58,8 +58,10 @@ As in the paper, the enciphering transformations `T k : M → E` are assumed uni
 
 ## Not formalized
 
-* The remark that, in perfect systems with `n` keys, the key uncertainty `H(K)` must be at least
-  `log n` to conceal the message information (an informal remark, not a stated result).
+* The remark that, in perfect systems "of the type described above" (the Latin-square systems
+  with `n` messages, `n` cryptograms and `n` keys), the key uncertainty `H(K)` must be at least
+  `log n` to conceal the message information (an informal remark, not a stated result). Merely
+  having `n` keys does not force `H(K) ≥ log n`.
 * `R_M L_M ≤ R_K L_K` for messages and keys generated as infinite sequences (only the finite-block
   form above is formalized), and the Vernam system with an unlimited key.
 * The remark that, for a message source of rate `R`, the key needed per letter can be reduced by
@@ -72,12 +74,13 @@ For the example `Tᵢ Mⱼ = E_{i + j mod n}` the paper states "`P_E(M) = 1/n = 
 the journal version). What holds is `P_M(E) = 1/n = P(E)` (`cipherKernel_zmod_apply`,
 `comp_cipherKernel_zmod_apply`), whence `P_E(M) = P(M)`, which is `1/n` only when
 `P(M) = 1/n`; `exists_cond_ne_inv_zmod` shows that `P_E(M) ≠ 1/n` for `n ≥ 2` and an a priori law
-concentrated on one message. The conclusion
-"we have perfect secrecy" is correct (`isPerfectSystem_zmod`).
+charging every message (the mixture of the point mass at `0` and the uniform law, half each).
+The conclusion "we have perfect secrecy" is correct (`isPerfectSystem_zmod`).
 
 The key-count argument in the paper fixes a key `i` and uses `P(E) ≠ 0` for the cryptograms
-`E = Tᵢ M`, with the implicit hypothesis that `i` has positive probability (Shannon may intend
-the "possible" keys to have `pᵢ > 0`). `exists_isPerfectSystem_comp_apply_eq_zero` gives a perfect
+`E = Tᵢ M`, which needs `i` to have positive probability. This is a missing qualification only if
+keys of probability zero are retained, not an error under Shannon's convention that the
+"possible" keys have `pᵢ > 0`: `exists_isPerfectSystem_comp_apply_eq_zero` gives a perfect
 system and a key `i` with `pᵢ = 0` and `P(Tᵢ M) = 0` for all `M`. The conclusion is unaffected,
 since some key has positive probability; the proofs below choose such a key.
 
@@ -181,9 +184,14 @@ omit [Countable M] [MeasurableSingletonClass M] [Countable K] [MeasurableSinglet
 /-- **Shannon's bound `R_M L_M ≤ R_K L_K`** (§10), in its finite-block form: if the messages are
 blocks of `L_M` letters from an alphabet `A` with `R_M = log |A|`, the keys are blocks of `L_K`
 letters from an alphabet `B` with `R_K = log |B|`, and the system is perfect, then
-`R_M L_M ≤ R_K L_K` (natural logarithms; the inequality does not depend on the base). -/
+`R_M L_M ≤ R_K L_K` (natural logarithms; the inequality does not depend on the base).
+
+The alphabets are assumed nonempty so that both rates are logarithms of positive cardinalities:
+`[Nonempty B]` is not used in the proof, but without it an empty key alphabet with `L_K = 0` would
+be admissible with the rate `log |B|` read through the convention `Real.log 0 = 0`. -/
+@[nolint unusedArguments]
 theorem mul_log_card_le_mul_log_card_of_isPerfectSystem {A B : Type*} [Finite A] [Nonempty A]
-    [MeasurableSpace A] [MeasurableSingletonClass A] [Finite B] [MeasurableSpace B]
+    [MeasurableSpace A] [MeasurableSingletonClass A] [Finite B] [Nonempty B] [MeasurableSpace B]
     [MeasurableSingletonClass B] {L_M L_K : ℕ} {T : (Fin L_K → B) → (Fin L_M → A) → E}
     (hT : ∀ k, Function.Injective (T k)) {ν : Measure (Fin L_K → B)} [IsProbabilityMeasure ν]
     (h : IsPerfectSystem T ν) :

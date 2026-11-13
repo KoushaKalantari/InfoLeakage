@@ -16,8 +16,10 @@ This file formalizes the exponential-adversary reconstruction attack of I. Dinur
 *Revealing information while preserving privacy*, PODS 2003, pp. 202–210
 ([doi:10.1145/773153.773173](https://doi.org/10.1145/773153.773173)), Section 3.1, in the form of
 Theorem 8.1 of C. Dwork and A. Roth, *The Algorithmic Foundations of Differential Privacy*, Found.
-Trends Theor. Comput. Sci. 9(3–4), 2014, Section 8.1, together with a quantitative form of the
-remark of Dwork–Roth (p. 163) that differential privacy prevents blatant non-privacy.
+Trends Theor. Comput. Sci. 9(3–4), 2014, Section 8.1, together with a partial, quantitative
+formalization of the remark of Dwork–Roth (p. 163) that differential privacy prevents blatant
+non-privacy (partial because blatant non-privacy is formalized only in its always-success and
+almost-sure variants; see the implementation notes).
 
 A database is a bit vector `d ∈ {0,1}^n`, here `d : ι → Bool` for a finite index type `ι` (the
 rows; `ι = Fin n` in the papers). A *statistical* (subset-sum) query is a set `S` of rows, with
@@ -38,12 +40,18 @@ and every candidate that is not ruled out is within Hamming distance `4E` of it.
 * `reconstructionAttack E r`: the exponential adversary, which outputs a candidate database that
   is not ruled out by the transcript `r` (one exists whenever `r` comes from a mechanism within
   perturbation `E`).
-* `IsBlatantlyNonPrivate M`: a family of mechanisms, given by the nonempty sets `M n d` of
-  transcripts they may produce on databases `d ∈ {0,1}^n`, is blatantly non-private (Dwork–Roth,
-  Definition 8.1): some adversary reconstructs every database up to `o(n)` entries from every such
-  transcript.
-* `IsBlatantlyNonPrivateAE K`: the same for randomized mechanisms given by Markov kernels `K n`:
-  some measurable adversary reconstructs every database up to `o(n)` entries almost surely.
+* `IsBlatantlyNonPrivate M`: an *always-success* variant of blatant non-privacy (Dwork–Roth,
+  Definition 8.1) for a family of mechanisms given by the nonempty sets `M n d` of transcripts
+  they may produce on databases `d ∈ {0,1}^n`: some adversary reconstructs every database up to
+  `o(n)` entries from *every* such transcript.
+* `IsBlatantlyNonPrivateAE K`: the *almost-sure* variant for randomized mechanisms given by Markov
+  kernels `K n`: some measurable adversary reconstructs every database up to `o(n)` entries
+  almost surely.
+
+Both predicates demand reconstruction with failure probability zero. They are therefore
+**stronger** than non-privacy in the sense of Definition 3 of Dinur–Nissim, which only asks for
+success with probability `1 - neg(n)`, and than the high-probability attacks discussed by
+Dwork–Roth (see the implementation notes).
 
 ## Main statements
 
@@ -57,15 +65,18 @@ and every candidate that is not ruled out is within Hamming distance `4E` of it.
   bounded by `n / 401` lets the adversary reconstruct more than `99%` of the entries.
 * `isBlatantlyNonPrivate_of_isLittleO`: **Theorem 2 of Dinur–Nissim**, deterministic form: a
   family of mechanisms within perturbation `o(n)` is blatantly non-private.
-* `IsBlatantlyNonPrivate.exists_eventually_lt`: blatant non-privacy gives the reconstruction
-  required by Definition 3 of Dinur–Nissim: for every constant `ε > 0`, eventually in `n`, fewer
-  than `εn` entries are wrong (with probability one, by the same adversary for every `ε`).
+* `IsBlatantlyNonPrivate.exists_eventually_lt`: always-success blatant non-privacy gives the
+  reconstruction required by Definition 3 of Dinur–Nissim, in a stronger form: for every constant
+  `ε > 0`, eventually in `n`, fewer than `εn` entries are wrong (with probability one rather than
+  `1 - neg(n)`, and by the same adversary for every `ε`).
 * `not_isBlatantlyNonPrivate_const`: sanity check, a mechanism with constant answers is not
   blatantly non-private.
 * `ae_hammingDist_reconstructionAttack_le`, `isBlatantlyNonPrivateAE_of_isLittleO`: the same two
   results for randomized mechanisms (kernels) whose answers are almost surely within perturbation.
 * `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP`: for fixed `ε` and `δ < 1`, a family of
-  `(ε, δ)`-differentially private mechanisms is not blatantly non-private.
+  `(ε, δ)`-differentially private mechanisms is not blatantly non-private in the almost-sure
+  sense. Since `IsBlatantlyNonPrivateAE` is stronger than Dinur–Nissim non-privacy, this does not
+  by itself exclude reconstruction attacks that fail with small positive probability.
 * `IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`: an `(ε, δ)`-differentially private
   randomized reconstruction of an `n`-bit database errs, on some database, in at least
   `n (1 - δ) / (1 + e^ε)` entries in expectation.
@@ -83,17 +94,27 @@ and every candidate that is not ruled out is within Hamming distance `4E` of it.
   `hammingDist_reconstructionAttack_le`, `exists_reconstruction_adversary`, and the asymptotic
   form `isBlatantlyNonPrivate_of_isLittleO`; for randomized mechanisms,
   `ae_hammingDist_reconstructionAttack_le` and `isBlatantlyNonPrivateAE_of_isLittleO`.
-* Dwork–Roth, Definition 8.1 (blatant non-privacy): `IsBlatantlyNonPrivate`,
-  `IsBlatantlyNonPrivateAE`; Dinur–Nissim,
-  Definition 3 (non-privacy), deterministic analogue: `IsBlatantlyNonPrivate.exists_eventually_lt`.
+* Dwork–Roth, Definition 8.1 (blatant non-privacy), **partial**: `IsBlatantlyNonPrivate`
+  (always-success variant) and `IsBlatantlyNonPrivateAE` (almost-sure variant). Definition 8.1
+  does not fix a success probability, and the surrounding discussion includes attacks that
+  succeed only with high probability; those are not covered by either predicate.
+* Dinur–Nissim, Definition 3 (non-privacy), **partial**:
+  `IsBlatantlyNonPrivate.exists_eventually_lt` shows that the always-success predicate implies
+  the reconstruction required by Definition 3
+  (with failure probability zero instead of `neg(n)`, and without the running time `t(n)`). The
+  converse fails, so Definition 3 itself, with its negligible failure probability, is not
+  formalized.
 * Dwork–Roth, the remark after Theorem 8.1 (`n / 401`, `99%`):
   `hammingDist_reconstructionAttack_lt_div`.
 * Dwork–Roth, the remark after the proof of Theorem 8.2 (p. 163: "if differential privacy is
   meaningful then lower bounds for preventing blatant non-privacy will also apply to any mechanism
-  ensuring differential privacy"): `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP`,
+  ensuring differential privacy"), **partial**: `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP`,
   `IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`,
   `card_mul_one_sub_le_of_isEpsDeltaDP`, `le_perturbation_of_isEpsDeltaDP`. The monograph makes
-  this remark informally; the statements and constants are derived here.
+  this remark informally; the statements and constants are derived here. The non-privacy
+  conclusion `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP` only rules out the almost-sure variant
+  of blatant non-privacy, which is a weaker privacy guarantee than ruling out reconstruction with
+  negligible failure probability; that stronger form is not formalized here.
 
 ## Implementation notes
 
@@ -105,6 +126,16 @@ and every candidate that is not ruled out is within Hamming distance `4E` of it.
   transcripts it can produce on `d` (`IsBlatantlyNonPrivate`), or by Markov kernels `K n` with
   the bounds holding almost surely (`IsBlatantlyNonPrivateAE`), for the fixed order in which the
   adversary issues the queries.
+* **Success probability.** Both blatant non-privacy predicates require the adversary to succeed
+  with probability one, whereas Definition 3 of Dinur–Nissim allows failure probability
+  `neg(n)`. The notions are distinct: a mechanism that releases the exact subset sums with
+  probability `1 - 2^{-n}`, and otherwise one fixed transcript shared by every database, is
+  non-private in the sense of Dinur–Nissim, but satisfies neither predicate (on the shared
+  transcript the adversary's output is the same for every database, so on some database it errs
+  in all `n` entries with positive probability). For the positive results
+  (`isBlatantlyNonPrivate_of_isLittleO`, `isBlatantlyNonPrivateAE_of_isLittleO`) the stronger
+  predicates give stronger conclusions; for the negative result
+  `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP` they give a weaker one.
 * Running time is not formalized: the adversary is a function of the transcript of all `2^n`
   answers, which is what makes it exponential (the `exp(n)` of Dinur–Nissim, Theorem 2).
 * Answers and the perturbation bound are real numbers; nothing requires them to be integers.
@@ -236,12 +267,15 @@ theorem hammingDist_reconstructionAttack_lt_div [Nonempty ι] (hd : IsWithinPert
 
 /-- A family of mechanisms answering subset-sum queries on databases `d ∈ {0,1}^n`, given by the
 nonempty sets `M n d` of transcripts (answers to all subset-sum queries) they can produce on `d`,
-is **blatantly non-private** (Definition 8.1 of Dwork–Roth) if an adversary can construct from the
-transcript a candidate database that agrees with the real one in all but `o(n)` entries:
-there are adversaries `A n` and a function `f = o(n)` such that `‖A n r - d‖₀ ≤ f n` for every
-`n`, every database `d` and every transcript `r ∈ M n d`. Nonemptiness (a mechanism always
-answers) rules out the vacuous case; see `not_isBlatantlyNonPrivate_const` for a mechanism that is
-not blatantly non-private. -/
+is **blatantly non-private, always-success variant** (of Definition 8.1 of Dwork–Roth) if an
+adversary can construct from the transcript a candidate database that agrees with the real one in
+all but `o(n)` entries: there are adversaries `A n` and a function `f = o(n)` such that
+`‖A n r - d‖₀ ≤ f n` for every `n`, every database `d` and every transcript `r ∈ M n d`.
+Nonemptiness (a mechanism always answers) rules out the vacuous case; see
+`not_isBlatantlyNonPrivate_const` for a mechanism that is not blatantly non-private.
+
+Success is required on *every* transcript, so this is stronger than non-privacy in the sense of
+Definition 3 of Dinur–Nissim, which allows the attack to fail with probability `neg(n)`. -/
 def IsBlatantlyNonPrivate (M : ∀ n : ℕ, (Fin n → Bool) → Set (Finset (Fin n) → ℝ)) : Prop :=
   (∀ n (d : Fin n → Bool), (M n d).Nonempty) ∧
     ∃ A : ∀ n : ℕ, (Finset (Fin n) → ℝ) → Fin n → Bool, ∃ f : ℕ → ℝ,
@@ -262,10 +296,12 @@ theorem isBlatantlyNonPrivate_of_isLittleO
   ⟨hne, fun n ↦ reconstructionAttack (E n), fun n ↦ 4 * E n, hE.const_mul_left 4,
     fun n d r hr ↦ hammingDist_reconstructionAttack_le (hM n d r hr)⟩
 
-/-- Blatant non-privacy gives the reconstruction demanded by **Definition 3 of Dinur–Nissim**
-(non-privacy), in a deterministic form: one family of adversaries such that, for every constant
-`ε > 0` and all sufficiently large `n`, the output differs from the database in fewer than `εn`
-entries, for every database and every transcript the mechanism can produce. -/
+/-- Always-success blatant non-privacy gives the reconstruction demanded by **Definition 3 of
+Dinur–Nissim** (non-privacy), in a stronger form: one family of adversaries such that, for every
+constant `ε > 0` and all sufficiently large `n`, the output differs from the database in fewer
+than `εn` entries, for every database and every transcript the mechanism can produce (failure
+probability zero rather than `neg(n)`; running time not formalized). The converse does not hold:
+Definition 3 allows a negligible failure probability, which `IsBlatantlyNonPrivate` does not. -/
 theorem IsBlatantlyNonPrivate.exists_eventually_lt
     {M : ∀ n : ℕ, (Fin n → Bool) → Set (Finset (Fin n) → ℝ)} (hM : IsBlatantlyNonPrivate M) :
     ∃ A : ∀ n : ℕ, (Finset (Fin n) → ℝ) → Fin n → Bool, ∀ ε > 0, ∀ᶠ n in atTop,
@@ -399,8 +435,9 @@ omit [DecidableEq ι] in
 subset-sum queries on an `n`-bit database within perturbation `E ≥ 0` with probability at least
 `1 - β`, for every database, then `n (1 - δ) ≤ (1 + e^ε)(4E + βn)`. This combines Theorem 8.1 of
 Dwork–Roth (the reconstruction attack, a post-processing of the answers) with
-`IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`; it makes precise the remark on p. 163
-of Dwork–Roth (the statement and constant are derived here, not quoted). -/
+`IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`; it is a quantitative consequence in
+the spirit of the remark on p. 163 of Dwork–Roth (the statement and constant are derived here, not
+quoted). -/
 theorem card_mul_one_sub_le_of_isEpsDeltaDP {M : Kernel (ι → Bool) (Finset ι → ℝ)}
     [IsMarkovKernel M] (hM : IsEpsDeltaDP M (fun d d' ↦ hammingDist d d' = 1) ε δ) (hE : 0 ≤ E)
     (hacc : ∀ d, 1 - β ≤ (M d).real {r | IsWithinPerturbation E d r}) :
@@ -458,11 +495,16 @@ theorem le_perturbation_of_isEpsDeltaDP {M : Kernel (ι → Bool) (Finset ι →
 
 /-! ### Blatant non-privacy of randomized mechanisms -/
 
-/-- **Blatant non-privacy of randomized mechanisms** (Definition 8.1 of Dwork–Roth, for a family of
-mechanisms given by Markov kernels `K n` from databases `d ∈ {0,1}^n` to transcripts of answers to
-all subset-sum queries): some family of measurable adversaries `A n` and some `f = o(n)` satisfy
-`‖A n r - d‖₀ ≤ f n` almost surely for `r ∼ K n d`, for every `n` and every database `d`. The
-kernels are required to be Markov, which rules out the vacuous case of the zero kernel. -/
+/-- **Blatant non-privacy of randomized mechanisms, almost-sure variant** (of Definition 8.1 of
+Dwork–Roth, for a family of mechanisms given by Markov kernels `K n` from databases `d ∈ {0,1}^n`
+to transcripts of answers to all subset-sum queries): some family of measurable adversaries `A n`
+and some `f = o(n)` satisfy `‖A n r - d‖₀ ≤ f n` almost surely for `r ∼ K n d`, for every `n` and
+every database `d`. The kernels are required to be Markov, which rules out the vacuous case of the
+zero kernel.
+
+Success is required almost surely, so this is stronger than non-privacy in the sense of
+Definition 3 of Dinur–Nissim, which allows the attack to fail with probability `neg(n)`; its
+negation, as in `not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP`, is correspondingly weaker. -/
 def IsBlatantlyNonPrivateAE (K : ∀ n : ℕ, Kernel (Fin n → Bool) (Finset (Fin n) → ℝ)) : Prop :=
   (∀ n, IsMarkovKernel (K n)) ∧
     ∃ A : ∀ n : ℕ, (Finset (Fin n) → ℝ) → Fin n → Bool, (∀ n, Measurable (A n)) ∧
@@ -491,12 +533,16 @@ theorem isBlatantlyNonPrivateAE_of_isLittleO
     fun _ ↦ measurable_reconstructionAttack _, fun n ↦ 4 * E n, hE.const_mul_left 4,
     fun n d ↦ ae_hammingDist_reconstructionAttack_le (hK n d)⟩
 
-/-- **Differential privacy prevents blatant non-privacy** (the remark on p. 163 of Dwork–Roth,
-made precise): for fixed `ε` and `δ < 1`, a family of mechanisms that are `(ε, δ)`-differentially
-private for databases differing in one entry is not blatantly non-private: no family of measurable
-adversaries errs in only `o(n)` entries almost surely. Indeed, by
-`IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`, any such adversary errs in at least
-`n (1 - δ) / (1 + e^ε)` entries in expectation on some database. -/
+/-- **Differential privacy prevents almost-sure blatant non-privacy** (a partial formalization of
+the remark on p. 163 of Dwork–Roth): for fixed `ε` and `δ < 1`, a family of mechanisms that are
+`(ε, δ)`-differentially private for databases differing in one entry is not blatantly non-private
+in the almost-sure sense: no family of measurable adversaries errs in only `o(n)` entries almost
+surely. Indeed, by `IsEpsDeltaDP.exists_card_mul_one_sub_le_sum_hammingDist`, any such adversary
+errs in at least `n (1 - δ) / (1 + e^ε)` entries in expectation on some database.
+
+Because `IsBlatantlyNonPrivateAE` demands success with probability one, this conclusion is weaker
+than the remark: it does not exclude attacks that succeed with probability `1 - neg(n)`, as allowed
+by Definition 3 of Dinur–Nissim. That stronger form is not formalized here. -/
 theorem not_isBlatantlyNonPrivateAE_of_isEpsDeltaDP
     {K : ∀ n : ℕ, Kernel (Fin n → Bool) (Finset (Fin n) → ℝ)}
     (hK : ∀ n, IsEpsDeltaDP (K n) (fun d d' ↦ hammingDist d d' = 1) ε δ) (hδ : δ < 1) :

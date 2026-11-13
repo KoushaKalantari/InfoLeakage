@@ -75,11 +75,12 @@ the paper.
   possibly different output spaces), `isEpsDeltaDP_piKernel` (for `ZCDP.piKernel`).
 * Composition of zCDP (Lemmas 1.7 and 2.3 of Bun–Steinke, `k`-fold): `isZCDP_adaptiveCompose`,
   `isZCDP_composeFin`; for `ε`-DP rounds, `isZCDP_adaptiveCompose_of_isEpsDP` (`k ε² / 2`).
-* Corollary 3.21 of Dwork–Roth for `(ε, 0)`-DP mechanisms, with the extra hypothesis
-  `δ' ≤ e^{-ε'/8}` it needs (see the notes below):
+* Corollary 3.21 of Dwork–Roth for `(ε, 0)`-DP mechanisms, under the sufficient additional
+  hypothesis `δ' ≤ e^{-ε'/8}` (see the notes below):
   `isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log` (stated as `ε' ≤ 8 ln (1 / δ')`),
   `isEpsDeltaDP_adaptiveCompose_of_le_one` (the book's `ε' ≤ 1` and `δ' ≤ e^{-1/8}`); a
-  counterexample without it: `exists_not_isEpsDeltaDP_adaptiveCompose`.
+  counterexample to the printed statement with `δ'` close to `1`, outside the book's intended
+  regime of negligible `δ'`: `exists_not_isEpsDeltaDP_adaptiveCompose`.
 * A `(1, e^{-32})`-DP guarantee in the setting of Example 3.7 of Dwork–Roth:
   `isEpsDeltaDP_adaptiveCompose_ten_thousand`.
 
@@ -111,19 +112,33 @@ the paper.
   `√(2 k ln (1 / δ'))` is `0`, and the conclusion is then the true statement that a Markov kernel
   is `(ε', δ')`-DP whenever `δ' ≥ 1`. As in the book, `ε ≥ 0`; DRV assume `ε > 0` and
   `δ, δ' > 0`.
+* The Corollary 3.21 statements are totalized extensions of the book's, whose formula
+  presupposes `k ≥ 1` and whose hypotheses include `0 < ε' < 1`: both allow `k = 0`, and
+  `isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log` also allows `ε' = 0` with `δ' = 1`. There
+  the prescribed `ε = ε' / (2 √(2 k ln (1 / δ')))` has denominator `0`, so Lean's `ε` is `0`.
+  These cases are harmless: for `k = 0` the hypothesis on the rounds is vacuous and the
+  conclusion is that the constant `0`-fold composition is `(ε', δ')`-DP, and for `δ' = 1` the
+  conclusion holds for every Markov kernel.
 
 ## Notes on the paper
 
-* Corollary 3.21 of Dwork–Roth (Section 3.5.2, p. 52) needs the extra hypothesis
-  `δ' ≤ e^{-ε'/8}`; without it there is a counterexample, in a degenerate edge case. The corollary
-  asserts that, for `0 < ε' < 1` and `δ' > 0`, `k` mechanisms that are each `(ε, δ)`-DP with
-  `ε = ε' / (2 √(2 k ln (1 / δ')))` compose to an `(ε', k δ + δ')`-DP mechanism. For `k = 1`,
-  `δ = 0`, `ε' = 9/10` and `δ' = e^{-1/800}`, this `ε` is `9`, and binary randomized response with
-  parameter `9` is `9`-DP but not `(9/10, e^{-1/800})`-DP
-  (`exists_not_isEpsDeltaDP_adaptiveCompose`). Every counterexample with `δ = 0` has
-  `δ' > e^{-ε'/8} > 0.88` for `ε' < 1` (by `isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log`),
-  far from the small `δ'` the corollary is meant for; only `δ = 0` is examined here. The proof
-  has two gaps.
+* Corollary 3.21 of Dwork–Roth (Section 3.5.2, p. 52), read literally, fails for `δ'` close to
+  `1`, outside the regime it is meant for. The corollary asserts that, for `0 < ε' < 1` and
+  `δ' > 0`, `k` mechanisms that are each `(ε, δ)`-DP with `ε = ε' / (2 √(2 k ln (1 / δ')))`
+  compose to an `(ε', k δ + δ')`-DP mechanism; it places no further restriction on `δ'` or `k`.
+  For `k = 1`, `δ = 0`, `ε' = 9/10` and `δ' = e^{-1/800} ≈ 0.99875`, this `ε` is `9`, and binary
+  randomized response with parameter `9` is `9`-DP but not `(9/10, e^{-1/800})`-DP: it is
+  `(9/10, δ')`-DP only for `δ' ≥ (e⁹ - e^{9/10}) / (1 + e⁹) ≈ 0.99957`
+  (`exists_not_isEpsDeltaDP_adaptiveCompose`). The book states (Section 2.3, p. 25) that
+  "typically, and throughout this monograph, we require that `δ` be a negligible function" of a
+  security parameter, so the corollary is meant for cryptographically small `δ'`; the
+  counterexample is a failure of the unrestricted printed formula outside that intended regime,
+  not of the corollary as used in the book. A sufficient additional hypothesis is
+  `δ' ≤ e^{-ε'/8}` (`isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log`); it is not necessary
+  (for `k = 1` and `ε' = δ' = 9/10` it fails, but the prescribed `ε ≈ 0.9803`, and an `ε`-DP
+  mechanism is `(9/10, 1 - e^{9/10 - ε})`-DP with `1 - e^{9/10 - ε} ≈ 0.077 < 9/10`; not
+  formalized). Every counterexample with `δ = 0` has `δ' > e^{-ε'/8} > 0.88` for
+  `ε' < 1`; only `δ = 0` is examined here. The proof has two gaps.
   It takes the bound of Theorem 3.20 to be `ε* = √(2 k ln (1 / δ')) ε + k ε²`, whereas
   Theorem 3.20 gives `k ε (e^ε - 1) ≥ k ε²` in the second term (for `δ = 0` the zCDP route does
   give `k ε² / 2`, so this step is repairable there). And "when `ε' < 1`, we have that
@@ -388,17 +403,23 @@ theorem isEpsDeltaDP_piKernel {ι : Type*} [Fintype ι] {R : ι → Type*}
 
 /-! ### Corollary 3.21: choosing the per-mechanism `ε` -/
 
-/-- **Corollary 3.21 of Dwork–Roth with the hypothesis `δ' ≤ e^{-ε'/8}`, for `(ε, 0)`-DP
-mechanisms**: let `ε' ≥ 0` and `δ' > 0` with `ε' ≤ 8 ln (1 / δ')`, i.e. `δ' ≤ e^{-ε'/8}`. If,
-for every `n < k` and every history `x`, the mechanism `S ↦ M n (S, x)` is `ε`-DP for the
-symmetric neighbouring relation `Adj`, where `ε = ε' / (2 √(2 k ln (1 / δ')))`, then the
-`k`-fold adaptive composition is `(ε', δ')`-DP.
+/-- **Corollary 3.21 of Dwork–Roth with the additional hypothesis `δ' ≤ e^{-ε'/8}`, for
+`(ε, 0)`-DP mechanisms**: let `ε' ≥ 0` and `δ' > 0` with `ε' ≤ 8 ln (1 / δ')`, i.e.
+`δ' ≤ e^{-ε'/8}`. If, for every `n < k` and every history `x`, the mechanism `S ↦ M n (S, x)` is
+`ε`-DP for the symmetric neighbouring relation `Adj`, where `ε = ε' / (2 √(2 k ln (1 / δ')))`,
+then the `k`-fold adaptive composition is `(ε', δ')`-DP.
 
-The book assumes `0 < ε' < 1` and `δ' > 0`; the corollary needs the extra hypothesis
-`δ' ≤ e^{-ε'/8}`, and without it there is a counterexample in the degenerate range
-`δ' > e^{-ε'/8}` (`> 0.88` for `ε' < 1`; `exists_not_isEpsDeltaDP_adaptiveCompose`). The
+The book assumes `0 < ε' < 1` and `δ' > 0`, with `δ'` negligible by its global convention
+(p. 25); a sufficient additional hypothesis is `δ' ≤ e^{-ε'/8}`. Some restriction is needed: the
+printed statement fails for some `δ'` close to `1` (`exists_not_isEpsDeltaDP_adaptiveCompose`),
+and every counterexample with `δ = 0` has `δ' > e^{-ε'/8}` (`> 0.88` for `ε' < 1`). The
 hypothesis holds for instance when `ε' ≤ 1` and `δ' ≤ e^{-1/8}`
-(`isEpsDeltaDP_adaptiveCompose_of_le_one`). `Y` is countably generated. -/
+(`isEpsDeltaDP_adaptiveCompose_of_le_one`). `Y` is countably generated.
+
+This is a totalized extension of the corollary: it also allows `k = 0`, and `ε' = 0` with
+`δ' = 1`, where the denominator `2 √(2 k ln (1 / δ'))` is `0` and Lean's `ε` is `0`; these cases
+are harmless (the `0`-fold composition is a constant kernel, and every Markov kernel is
+`(ε', 1)`-DP). -/
 theorem isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log [MeasurableSpace.CountablyGenerated Y]
     [Std.Symm Adj] [∀ n, IsMarkovKernel (M n)] {k : ℕ} {ε' δ' : ℝ} (hε' : 0 ≤ ε')
     (hδ' : 0 < δ') (hε'δ' : ε' ≤ 8 * log (1 / δ'))
@@ -434,9 +455,12 @@ theorem isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log [MeasurableSpace.Counta
 /-- **Corollary 3.21 of Dwork–Roth with the book's hypotheses plus `δ' ≤ e^{-1/8}`**, for
 `(ε, 0)`-DP mechanisms: for `0 ≤ ε' ≤ 1` and `0 < δ' ≤ e^{-1/8}`, if every round is `ε`-DP with
 `ε = ε' / (2 √(2 k ln (1 / δ')))`, then the `k`-fold adaptive composition is `(ε', δ')`-DP. For a
-given `ε' < 1`, the condition the proof actually needs is the weaker `δ' ≤ e^{-ε'/8}`
+given `ε' < 1`, the weaker `δ' ≤ e^{-ε'/8}` is already sufficient
 (`isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log`); `δ' ≤ e^{-1/8}` is the version uniform in
-`ε' ≤ 1`. Some restriction on `δ'` is needed (`exists_not_isEpsDeltaDP_adaptiveCompose`). -/
+`ε' ≤ 1`. Some restriction on `δ'` is needed (`exists_not_isEpsDeltaDP_adaptiveCompose`).
+The statement also allows `k = 0` (a totalized extension: the prescribed `ε` is then `ε' / 0 = 0`
+in Lean, the hypothesis on the rounds is vacuous, and the `0`-fold composition is a constant
+kernel); here `δ' < 1` holds automatically. -/
 theorem isEpsDeltaDP_adaptiveCompose_of_le_one [MeasurableSpace.CountablyGenerated Y]
     [Std.Symm Adj] [∀ n, IsMarkovKernel (M n)] {k : ℕ} {ε' δ' : ℝ} (hε' : 0 ≤ ε') (hε'1 : ε' ≤ 1)
     (hδ' : 0 < δ') (hδ'e : δ' ≤ exp (-(1 / 8)))
@@ -448,15 +472,19 @@ theorem isEpsDeltaDP_adaptiveCompose_of_le_one [MeasurableSpace.CountablyGenerat
   rw [one_div, log_inv]
   linarith
 
-/-- **Corollary 3.21 of Dwork–Roth needs a restriction on `δ'`**: without the extra hypothesis
-`δ' ≤ e^{-ε'/8}` there is a counterexample, in a degenerate edge case. With `k = 1`,
+/-- **The printed Corollary 3.21 of Dwork–Roth fails without a restriction on `δ'`**, for `δ'`
+close to `1`, outside the book's intended regime: the book requires `δ` to be negligible
+"throughout this monograph" (Section 2.3, p. 25), while the corollary's hypotheses (p. 52) are only
+`0 < ε' < 1` and `δ' > 0`. With `k = 1`,
 `ε' = 9/10 ∈ (0, 1)`, `δ' = e^{-1/800} > 0` and `δ = 0`, the corollary asserts that the `1`-fold
 composition of an `ε`-DP mechanism, `ε = ε' / (2 √(2 k ln (1 / δ'))) = 9`, is `(ε', δ')`-DP.
 Binary randomized response with parameter `9` (on `Bool`, where any two inputs are neighbours) is
 `9`-DP, but its `1`-fold composition is not `(9/10, e^{-1/800})`-DP: it reports the true bit with
-probability `e⁹ / (1 + e⁹) > e^{9/10} / (1 + e⁹) + e^{-1/800}`. Every counterexample with `δ = 0`
-has `δ' > e^{-ε'/8}`, which exceeds `0.88` for `ε' < 1`
-(`isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log`); only `δ = 0` is examined. -/
+probability `e⁹ / (1 + e⁹) > e^{9/10} / (1 + e⁹) + e^{-1/800}` (it is `(9/10, δ')`-DP only for
+`δ' ≥ (e⁹ - e^{9/10}) / (1 + e⁹) ≈ 0.99957`, while `e^{-1/800} ≈ 0.99875`). Every counterexample
+with `δ = 0` has `δ' > e^{-ε'/8}`, which exceeds `0.88` for `ε' < 1`
+(`isEpsDeltaDP_adaptiveCompose_of_le_eight_mul_log`, a sufficient additional hypothesis); only
+`δ = 0` is examined. -/
 theorem exists_not_isEpsDeltaDP_adaptiveCompose :
     ∃ M : (n : ℕ) → Kernel (Bool × (Fin n → Bool)) Bool, (∀ n, IsMarkovKernel (M n)) ∧
       (∀ n x, IsEpsDP ((M n).sectL x) (fun _ _ ↦ True)

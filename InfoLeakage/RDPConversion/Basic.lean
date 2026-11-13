@@ -151,9 +151,13 @@ theorem measureReal_le_of_renyiDiv_le {P Q : Measure Y} [IsProbabilityMeasure P]
 `(x, y) = (P(Eᶜ), Q(E))` (the deterministic test `S = Eᶜ` in the unnumbered reformulation of
 Theorem 18 stated just before Corollary 19) lies in
 `R_{D_α}(ρ) = {(x, y) | x ^ α (1 - y) ^ (1 - α) + (1 - x) ^ α y ^ (1 - α) ≤ e^{ρ (α - 1)}}`.
-As in the paper, `0 ^ (1 - α) = 0` (this is also Mathlib's convention). The step `(†)` of the
-proof of Theorem 21 drops the first term. Deterministic tests only; randomized tests (Theorem 18)
-and the converse are not formalized. -/
+As in the paper, `0 ^ (1 - α) = 0` (this is also Mathlib's convention). With this convention the
+displayed set is only an outer approximation of the set of attainable pairs: for instance
+`(x, y) = (0, 0)` satisfies the inequality, but `Q(E) = 0 < 1 = P(E)` forces
+`D_α(P ‖ Q) = ∞`. Attainable pairs also satisfy `y = 0 → x = 1` and `y = 1 → x = 0` (absolute
+continuity); the theorem proves only the displayed inequality. The step `(†)` of the proof of
+Theorem 21 drops the first term. Deterministic tests only; randomized tests (Theorem 18) and the
+converse are not formalized. -/
 theorem sum_rpow_mul_rpow_le_of_renyiDiv_le {P Q : Measure Y} [IsProbabilityMeasure P]
     [IsProbabilityMeasure Q] {α ρ : ℝ} (hα : 1 < α) (hρ : 0 ≤ ρ)
     (h : renyiDiv α P Q ≤ ENNReal.ofReal ρ) {E : Set Y} (hE : MeasurableSet E) :

@@ -25,7 +25,9 @@ to be a Markov kernel `κ : Kernel α β` between finite alphabets:
 
 They show `Adv^ss ≤ Adv^ds ≤ 2 Adv^ss` (Theorem 4.1), `Adv^ds ≤ √(2 Adv^mis)` (Theorem 4.5) and
 `Adv^mis ≤ 2 ε log (N / ε)` with `ε = Adv^ds` (Theorem 4.9), so that, asymptotically, MIS-security
-and semantic security are equivalent.
+and semantic security are equivalent *when* `ε_k log N_k → 0` (e.g. polynomial lengths and
+exponentially small `ε_k`): MIS ⇒ SS holds unconditionally, but SS (or DS) ⇒ MIS needs this rate
+condition and can fail without it (see "Which implications form the equivalence" below).
 
 ## Scope
 
@@ -120,7 +122,9 @@ References are to arXiv:1201.2205v2 (23 January 2012).
   establish the `2^c` form when `d > c`, and we do not claim it. *Unverified side remark (from a
   review of this file, not checked here):* applying Lemma 4.6 on the message alphabet instead,
   to `P_M` and `P_{M|C=c}`, seems to give a bound `2 ε lg (2^m / ε)`, which would recover the
-  `2^c` form whenever `m ≤ c`.
+  `2^c` form whenever `m ≤ c`. A second review (OpenAI Codex) likewise says the sender-alphabet
+  form can be recovered separately, via a reduction of the support of a capacity-achieving input;
+  this is also not checked here.
 * **Theorem 4.9, proof (p. 15).** The proof sets `f(x) = min(2x lg(2^c / x), 1)` and asserts
   `H(P_C) - H(P_{C|M=M}) ≤ f(x)`. Lemma 4.6 does not give the cap `1`, and the claim is false in
   general: for a channel whose row at `M` is a point mass while `P_C` is uniform on four symbols,
@@ -990,7 +994,10 @@ section SS
 variable {κ : Kernel α β}
 
 /-- A simulator, which sees nothing, guesses `f(M)` with probability at most
-`max_u P[f(M) = u]`, and this is attained: `blindGuessProb` is the simulator term of eq. (3). -/
+`max_u P[f(M) = u]`, and this is the supremum over simulators: `blindGuessProb` is the simulator
+term of eq. (3). The equality holds for every finite `γ`; for empty `γ` there is no probability
+measure on `γ` and both sides are empty suprema (`0`). For nonempty `γ` the supremum is attained
+by a deterministic simulator: `exists_simulator_eq_blindGuessProb`. -/
 theorem blindGuessProb_eq_iSup_simulator [Fintype γ] [MeasurableSingletonClass γ] (μ : Measure α)
     (ρ : Kernel α γ) :
     blindGuessProb μ ρ =
@@ -1005,6 +1012,18 @@ theorem blindGuessProb_eq_iSup_simulator [Fintype γ] [MeasurableSingletonClass 
             exact le_iSup (fun u ↦ (ρ ∘ₘ μ) {u}) u
       _ = blindGuessProb μ ρ := by
           rw [← sum_mul, sum_measure_singleton, coe_univ, measure_univ, one_mul]
+
+/-- For a nonempty finite alphabet `γ`, the simulator term of eq. (3) is attained: the
+deterministic simulator `S = u*`, for `u*` maximizing `P[f(M) = u]`, has success probability
+`blindGuessProb μ ρ`. -/
+theorem exists_simulator_eq_blindGuessProb [Fintype γ] [Nonempty γ] [MeasurableSingletonClass γ]
+    (μ : Measure α) (ρ : Kernel α γ) :
+    ∃ (s : Measure γ), IsProbabilityMeasure s ∧
+      ∑ u, s {u} * (ρ ∘ₘ μ) {u} = blindGuessProb μ ρ := by
+  obtain ⟨u, hu⟩ := exists_eq_ciSup_of_finite (f := fun u ↦ (ρ ∘ₘ μ) {u})
+  refine ⟨Measure.dirac u, inferInstance, ?_⟩
+  rw [sum_eq_single u (fun v _ hv ↦ by simp [Measure.dirac_apply', hv.symm]) (by simp)]
+  simpa [blindGuessProb] using hu
 
 /-- The best adversarial success probability is finite. -/
 lemma SemanticSecurity.iSup_guessProb_ne_top [IsMarkovKernel κ] {μ : Measure α}

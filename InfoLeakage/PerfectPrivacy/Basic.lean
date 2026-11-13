@@ -118,10 +118,13 @@ non-trivial utility `I(X; Y) > 0` if and only if `δ(p_{S,X}) = 0`.
 ## Notes on the paper
 
 * ISIT 2015, Section V, Corollary 2, (20) [T-IT, Corollary 8, (72), p. 30]: the bound
-  `t* ≥ 1 - max_{f ∈ F₀} E[h_b(1/2 + f(X) / (2‖f‖_∞))]` should read `min` instead of `max`. As
-  printed it is vacuous: `F₀` contains the trivial function `f₀ = 0`, for which the expectation
-  is `h_b(1/2) = 1` (reading `0 / 0` as `0`), and `h_b ≤ 1`, so the right-hand side is `0`; even
-  with `f₀` excluded, `max` gives a weaker bound than the proof provides. The construction of
+  `t* ≥ 1 - max_{f ∈ F₀} E[h_b(1/2 + f(X) / (2‖f‖_∞))]` should read `min` instead of `max`.
+  `F₀` contains the trivial function `f₀ = 0`, for which the term `f₀(X) / (2‖f₀‖_∞)` is
+  literally `0 / 0`, so the printed right-hand side is undefined as written. Under the extension
+  reading `0 / 0` as `0` (as Lean does), the expectation for `f₀` is `h_b(1/2) = 1`, and
+  `h_b ≤ 1`, so the right-hand side is `0` and the printed bound is vacuous; its vacuity thus
+  depends on that zero-function extension. Even with `f₀` excluded, `max` gives a weaker bound
+  than the proof provides. The construction of
   Theorem 3 gives `G_I(t, p_{S,X}) = 0` for `t ≤ 1 - E[h_b(⋯)]` for *every* `f ∈ F₀`, which is
   the bound with `min`. The printed inequality is still true (it is weaker); the corrected one is
   `privacyFunnel_eq_zero_of_le`.
@@ -1037,9 +1040,15 @@ theorem mutualInfo_perfectPrivacyMapping [Finite 𝓨] (hne : y₀ ≠ y₁)
   simp_rw [hx, mul_sub, Finset.sum_sub_distrib, ← Finset.sum_mul, hsum, one_mul]
 
 omit [Fintype 𝓢] [MeasurableSingletonClass 𝓢] in
-/-- The useful information `log 2 - ∑_x p_X(x) h(1/2 + f(x) / (2 ‖f‖_∞))` disclosed by
-`perfectPrivacyMapping f y₀ y₁` is positive as soon as `f` is nonzero on the support of `p_X`
-(Calmon–Makhdoumi–Médard, (19)). -/
+/-- The entropy inequality `∑_x p_X(x) h(1/2 + f(x) / (2 ‖f‖_∞)) < log 2`, for any `f` that is
+nonzero at some point of the support of `p_X`.
+
+When moreover `f` is conditionally centered (`E[f(X) | S] = 0`) and `y₀ ≠ y₁`, the difference
+`log 2 - ∑_x p_X(x) h(⋯)` is the useful information `I(X; Y)` disclosed by
+`perfectPrivacyMapping f y₀ y₁` (`mutualInfo_perfectPrivacyMapping`, (19) of
+Calmon–Makhdoumi–Médard), which is therefore positive. Without centering this interpretation
+fails: for `f ≡ 1` the difference is `log 2`, but the mapping always outputs `y₁`, so
+`I(X; Y) = 0`. -/
 theorem PerfectPrivacy.sum_binEntropy_lt_log_two {x : 𝓧} (hx : f x ≠ 0) (hpx : (κ ∘ₘ π) {x} ≠ 0) :
     ∑ x, (κ ∘ₘ π).real {x} * Real.binEntropy (2⁻¹ + f x / (2 * ‖f‖)) < Real.log 2 := by
   have hn : 0 < ‖f‖ := norm_pos_iff.2 fun h0 ↦ hx (by simp [h0])
@@ -1055,11 +1064,17 @@ theorem PerfectPrivacy.sum_binEntropy_lt_log_two {x : 𝓧} (hx : f x ≠ 0) (hp
 
 omit [Fintype 𝓢] [MeasurableSingletonClass 𝓢] in
 /-- **Corollary 2 of Calmon–Makhdoumi–Médard** (Corollary 8 of Calmon et al., T-IT 2017),
-first claim, in nats (the sharpness claim is not formalized): for every `f` with
-`E[f(X) | S] = 0` (an element of the paper's `F₀`), the privacy funnel vanishes,
-`G_I(t, p_{S,X}) = 0`, for all `t ≤ log 2 - E[h(1/2 + f(X) / (2 ‖f‖_∞))]`. Hence the largest `t*`
-with `G_I(t*, p_{S,X}) = 0` satisfies
-`t* ≥ sup_{f ∈ F₀} (log 2 - E[h(1/2 + f(X) / (2 ‖f‖_∞))])` (see the notes on the paper). -/
+first claim, in nats (the sharpness claim is not formalized): for every conditionally centered
+`f`, i.e. with `E[f(X) | S] = 0` and no normalization assumed, the privacy funnel vanishes,
+`G_I(t, p_{S,X}) = 0`, for all `t ≤ log 2 - E[h(1/2 + f(X) / (2 ‖f‖_∞))]`.
+
+The paper's `F₀` consists of the trivial function `f₀ = 0` and the conditionally centered `f`
+with `E[f(X)] = 0` and `‖f(X)‖₂ = 1`; every element of `F₀` is conditionally centered, so the
+theorem applies to all of them. Hence the largest `t*` with `G_I(t*, p_{S,X}) = 0` satisfies
+`t* ≥ sup_{f ∈ F₀} (log 2 - E[h(1/2 + f(X) / (2 ‖f‖_∞))])` (see the notes on the paper). The
+normalization in `F₀` loses nothing: the bound is unchanged when `f` is replaced by `c f` with
+`c ≠ 0`, since it depends on `f` only through `f / ‖f‖_∞` up to sign and `h` is symmetric about
+`1/2`. -/
 theorem privacyFunnel_eq_zero_of_le (hf : ∀ s, ∑ x, (κ s).real {x} * f x = 0) {t : ℝ≥0∞}
     (ht : t ≤ ENNReal.ofReal
       (Real.log 2 - ∑ x, (κ ∘ₘ π).real {x} * Real.binEntropy (2⁻¹ + f x / (2 * ‖f‖)))) :

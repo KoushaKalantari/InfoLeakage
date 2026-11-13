@@ -59,7 +59,8 @@ finite alphabets.
   `RenyiDP.renyiDiv_randomizedResponseOfProb`.
 * Proposition 9 (monotonicity in the order) → Statlib's `renyiDiv_le_renyiDiv_of_le`; for
   mechanisms, `IsRenyiDP.of_order_le`.
-* Proposition 10 (probability preservation) → `RenyiDP.measure_le_rpow_of_renyiDiv_le`; for
+* Proposition 10 (probability preservation), in its **finite-divergence, bounded-budget**
+  version (`D_α(P ‖ Q) ≤ c` with `c` real) → `RenyiDP.measure_le_rpow_of_renyiDiv_le`; for
   mechanisms (Table I, change in the probability of an outcome) `IsRenyiDP.measureReal_le_rpow`
   and `IsRenyiDP.le_measureReal`.
 * Proposition 11 (weak triangle inequality) → `RenyiDP.renyiDiv_le_mul_renyiDiv_add_renyiDiv`;
@@ -102,13 +103,16 @@ Proposition 6 and Corollary 2 (Laplace mechanism) are in `InfoLeakage.RenyiDP.La
 ## Not formalized
 
 * The Bayesian interpretation (inequality (1) and the Bayes-factor rows of Table I),
-  Proposition 8 (nonnegativity; Statlib's `renyiDiv` is `ℝ≥0∞`-valued), Corollary 4, items 2–4
-  (they involve `D_∞`), adaptive composition at `α = 1`.
+  Proposition 8 (nonnegativity; Statlib's `renyiDiv` is `ℝ≥0∞`-valued), Corollary 4, items 2–3
+  (they involve `D_∞`) and item 4 (a finite-order `β` statement, omitted separately), adaptive
+  composition at `α = 1`.
+* The extended-valued form of Proposition 10 (`D_α(P ‖ Q) = ∞` allowed, with infinite-divergence
+  and zero-probability events treated separately).
 * Lemma 1, Proposition 4 and Corollary 1 (advanced composition), Proposition 5 at `α = 1`,
   Proposition 7 (Gaussian mechanism; for `α > 1`, Corollary 3 follows from the Gaussian
   mechanism's zCDP bound in `InfoLeakage.ZCDP.Basic` and `isZCDP_zero_iff_forall_isRenyiDP`),
-  the differential-privacy column of Table II (e.g. randomized response is
-  `log (p / (1 - p))`-DP), and the numerical comparisons of Sections VI–VII.
+  the differential-privacy column of Table II (e.g. randomized response with parameter
+  `0 < p < 1` is `|log (p / (1 - p))|`-DP), and the numerical comparisons of Sections VI–VII.
 -/
 
 @[expose] public section
@@ -199,9 +203,13 @@ lemma renyiDiv_le_of_forall_le (hα : 1 < α) (hc : 0 ≤ c)
     _ = ENNReal.ofReal (exp ((α - 1) * c)) := by
         rw [ENNReal.ofReal_rpow_of_nonneg (exp_pos _).le (by linarith), ← Real.exp_mul, mul_comm]
 
-/-- **Proposition 10** of Mironov (probability preservation): for probability measures, `α > 1`
-and `D_α(P ‖ Q) ≤ c`, every set `s` satisfies `P(s) ≤ (e^c Q(s)) ^ ((α - 1) / α)`. The paper
-assumes that `P` and `Q` have the same support; this is not needed. -/
+/-- **Proposition 10** of Mironov (probability preservation), **finite-divergence,
+bounded-budget version**: for probability measures, `α > 1` and `D_α(P ‖ Q) ≤ c` with `c` a real
+number, every set `s` satisfies `P(s) ≤ (e^c Q(s)) ^ ((α - 1) / α)`. This is not the complete
+extended-valued statement (which would also allow `D_α(P ‖ Q) = ∞`). The paper assumes that `P`
+and `Q` have the same support; that assumption is not needed here, because
+`D_α(P ‖ Q) ≤ c < ∞` already implies `P ≪ Q` (common support alone would not make the divergence
+finite). -/
 theorem measure_le_rpow_of_renyiDiv_le (hα : 1 < α) (hc : 0 ≤ c)
     (h : renyiDiv α P Q ≤ ENNReal.ofReal c) (s : Set Y) :
     P s ≤ (ENNReal.ofReal (exp c) * Q s) ^ ((α - 1) / α) := by
@@ -350,8 +358,11 @@ The divergence is Statlib's `renyiDiv`, in nats with values in `ℝ≥0∞`. The
 results below assume the range of orders they need. The definition is only meaningful for
 `α ≥ 0`: for `α < 0` Statlib's Hellinger divergence vanishes and the condition carries no
 information (the paper does not use orders below `1`, Remark 2). It is also only meaningful for
-Markov kernels, which every result below assumes: for other kernels `renyiDiv` compares the
-normalized measures `M(S) / M(S)(univ)` (with degenerate values at zero measures). The privacy
+Markov kernels, which every result below assumes. For kernels whose output measures are nonzero
+and finite, `renyiDiv` compares the normalized measures `M(S) / M(S)(univ)`; at zero measures it
+takes degenerate values, and for non-finite output measures even this interpretation fails
+(inverting an infinite mass gives `0`, and `renyiDiv` need not equal a divergence of normalized
+measures), so such kernels are excluded. The privacy
 parameter is `ε : ℝ≥0`, since the divergence is nonnegative and a parameter `ε = ∞` would be
 vacuous. -/
 def IsRenyiDP (M : Kernel 𝒟 Y) (Adj : 𝒟 → 𝒟 → Prop) (α : ℝ) (ε : ℝ≥0) : Prop :=

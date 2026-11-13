@@ -62,11 +62,11 @@ top of it.
 Main results of about sixty papers and books are formalized, mostly for finite alphabets; the
 DP, Rényi DP, zCDP, mechanism and f-information results hold on general measurable spaces.
 About 38,000 lines; no `sorry`. Every declaration uses only Lean's standard axioms (checked by a
-script over the whole library). The library passes the Mathlib linters and `lake lint`. Each paper's statements were adversarially reviewed against the
-paper by a second AI reviewer, and every fix raised was applied: OpenAI Codex for the six leakage
-papers, and an independent Claude referee for everything else (Codex review of those is
-pending). Module docstrings map each paper result to its Lean name and say exactly what is and
-isn't formalized.
+script over the whole library). The library passes the Mathlib linters and `lake lint`. Lean
+checks the proofs; whether each statement says what the paper says was checked separately by
+two independent AI referees, an independent Claude referee and OpenAI Codex (gpt-6-astra), each
+reading the paper against the Lean statements, and every fix either raised was applied. Module
+docstrings map each paper result to its Lean name and say exactly what is and isn't formalized.
 
 ### Differential privacy
 
@@ -139,9 +139,9 @@ isn't formalized.
 
 ### What the formalization found
 
-Five published theorems or corollaries are false as written. Each is a wrong constant or a
-degenerate edge case, each has a counterexample checked in Lean, and a corrected version is proved
-here:
+Four published theorems are false as written. Each is a wrong constant or a degenerate edge
+case, each has a counterexample checked in Lean, a corrected version is proved here, and both
+referees confirmed it:
 
 - **Kasiviswanathan–Smith**, Thm. 2.4(2): "(ε/2, δ)-semantic privacy ⇒ (3ε, 2δ)-DP" fails for
   randomized response on one bit (`not_forall_isDP_of_isEpsDeltaSemanticPrivate`); the repair
@@ -159,17 +159,23 @@ here:
   present with certainty adds no Pufferfish constraint, so enlarging the independent priors by it
   keeps the definition equivalent to DP (`Pufferfish.exists_not_subset_indepPriors_isPufferfish_iff`).
   Thm. 6.2 is proved under the positivity assumption that the proof needs.
-- **Dwork–Roth**, Cor. 3.21: needs δ′ ≤ e^{−ε′/8}; there is a counterexample with δ′ near 1
-  (`exists_not_isEpsDeltaDP_adaptiveCompose`). Its proof uses kε² where Thm. 3.20 gives
-  kε(e^ε − 1). Example 3.7 attributes its numbers to Thm. 3.20, which gives ε′ ≈ 1.014, not 1;
-  the example's conclusion is still true by optimal composition (checked numerically).
 
-Formalizing also surfaced these issues in the papers' text, each confirmed by an independent
-reviewer and, where marked, by a Lean proof; details are in the module docstrings.
+One more is false by a numerical counterexample that is not yet in Lean:
 
-- **Dwork–Feldman–Hardt–Pitassi–Reingold–Roth**, Lemma 14 (composition of max-information): the
-  last equality of the proof is false in general; a three-point counterexample is checked in
-  Lean (`MaxInformation.exists_not_maxInformation_snd_compProd_le`). The lemma itself (β = 0) is
+- **Nissim–Raskhodnikova–Smith**, Lemma 2.6: admissible noise does not give (ε, δ)-DP in general.
+  OpenAI Codex found the counterexample (noise N(1000, 1), ε = 0.5, δ = 0.224, α = 0.5,
+  β = log 1.0005, two neighbouring databases): the noise is admissible, but the privacy gap on
+  (−∞, 1000] is 0.238 > δ; we re-checked the numbers independently. The proof's last equality
+  (p. 9) is the faulty step; what it does give, (ε, (1 + e^{ε/2})δ/2)-DP, is proved here, as is
+  the Laplace case.
+
+Formalizing also surfaced these issues in the papers' text, each confirmed by both referees and,
+where marked, by a Lean proof; details are in the module docstrings.
+
+- **Dwork–Feldman–Hardt–Pitassi–Reingold–Roth**, Lemma 14 (composition of max-information): a gap
+  in the published proof, whose last equality swaps two different joint laws; the fixed-prior
+  version of that step fails by a three-point counterexample checked in Lean
+  (`MaxInformation.exists_not_maxInformation_snd_compProd_le`). The lemma itself (β = 0) is
   true and is proved here by another route. The proof of Thm. 19 cites "Lemma 3" for Lemma 12.
 - **du Pin Calmon–Fawaz**, §V: the sentence before Thm. 3 says ε-information privacy bounds the
   maximum information leakage (their Def. 4) by ε. That is false; Lean counterexample
@@ -177,13 +183,15 @@ reviewer and, where marked, by a Lean proof; details are in the module docstring
   information holds.
 - **Balle–Barthe–Gaboardi**, §5: the stated hockey-stick divergence ψ_p(ε) of randomized response
   holds only for p ≥ 1/(1+e^ε), although the paper allows p ∈ [0, 1]; Lean counterexample at
-  p = 0 (`Amplification.hockeyStickDiv_randResp_zero`). Thm. 13 still holds. Also typos: S^wo
+  p = 0 (`Amplification.hockeyStickDiv_randResp_zero`). Lemma 12 inherits the error; Thm. 13 still
+  holds. Also typos: S^wo
   for S^po around Thm. 8, and two coupling typos in the proof of Thm. 9.
 - **Dwork–Roth**: the proof of Thm. 3.14 (p. 42) writes r₁ for r₂, and the proof of Thm. B.1
   (p. 267) treats a non-additive set function as a measure; the theorem holds via the Jordan
   decomposition, as proved here.
 - **Bellare–Tessaro–Vardy**: Thm. 4.9 is stated with the sender's ciphertext alphabet (2^c) but
-  its proof bounds the adversary's (2^d), which is what is proved here; the proof also caps an
+  its proof bounds the adversary's (2^d), which is what is proved here (the 2^c form can be
+  recovered by a separate argument); the proof also caps an
   entropy difference at 1 bit, which fails in general (a 2-bit counterexample), though the
   theorem holds; and the proof of Lemma 4.6 swaps P and Q in one step.
 - **Mironov**: the definition of a c-stable transformation (§III) is reversed relative to its use
@@ -215,15 +223,20 @@ reviewer and, where marked, by a Lean proof; details are in the module docstring
   existence.
 - **Kairouz–Oh–Viswanath**: p. 17 says the δ's are "as in (6)", which is right only for δ = 0;
   plus three index and labelling typos.
+- **Dwork–Roth**, Cor. 3.21: as printed it fails for δ′ near 1 (Lean counterexample
+  `exists_not_isEpsDeltaDP_adaptiveCompose`), a regime the book's standing convention that δ is
+  negligible (p. 25) excludes; δ′ ≤ e^{−ε′/8} is a sufficient repair. Its proof uses kε² where
+  Thm. 3.20 gives kε(e^ε − 1), and Example 3.7 attributes its numbers to Thm. 3.20, which gives
+  ε′ ≈ 1.014, not 1 (the example's conclusion is still true by optimal composition, checked
+  numerically).
 - **Mironov**, Prop. 6 is stated for α ≥ 1, but its formula is undefined at α = 1 (the value there
   is given separately).
 - Smaller slips, each harmless: Rogers–Roth–Ullman–Vadhan Def. 3.1 quantifies over outcome sets
   it never uses; Durfee–Rogers p. 12 states the bounded-range property with the quantifiers in
   the wrong order; Balle et al. p. 12 prints log d for log δ; Bassily et al. Lemma 3.1 types the
-  algorithm on (𝒳ⁿ)^T instead of 𝒳ⁿ; Canonne–Kamath–Steinke's proof of Prop. 5 skips α = 1.
-- **Nissim–Raskhodnikova–Smith**, proof of Lemma 2.6 (p. 9): the last equality of the display is
-  false for ε > 0, so the proof gives (ε, (1 + e^{ε/2})δ/2)-DP, which is what is proved here;
-  whether the stated (ε, δ) holds in general is open. In the proof of Lemma 2.9, "median ≤ d, so
+  algorithm on (𝒳ⁿ)^T instead of 𝒳ⁿ; Canonne–Kamath–Steinke's proof of Prop. 5 skips α = 1, and
+  their Thm. 7 (not formalized here) needs integer sensitivity (Δ = 1/2 makes its δ negative).
+- **Nissim–Raskhodnikova–Smith**, besides Lemma 2.6 above: in the proof of Lemma 2.9, "median ≤ d, so
   ρ_{δ′} > d" does not follow (it fails for d = 1, δ > 2/e), ρ_δ should be ρ_{δ/2}, and the
   dilation step bounds h′/h where h/h′ is needed; the d = 1 statement is proved.
 - **Shannon**, p. 681: the example prints P_E(M) = 1/n where P_M(E) = 1/n is meant; the

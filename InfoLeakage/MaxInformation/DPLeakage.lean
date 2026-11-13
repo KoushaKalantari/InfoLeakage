@@ -34,14 +34,16 @@ being known, is at most `ε`. Logarithms are natural (nats; the paper uses `log�
 
 * `sum_iSup_le_of_isEpsDeltaDP`, `maxMultLeakage_le_of_isEpsDeltaDP`,
   `minEntropyLeakage_le_of_isEpsDeltaDP`: **Theorem 1**, in the forms
-  `∑_z max_x K(z | x) ≤ (v e^ε / (v - 1 + e^ε))^u` (the min-capacity) and
+  `∑_z max_x K(z | x) ≤ (v e^ε / (v - 1 + e^ε))^u` (the exponential `ML× = e^{C∞}` of the
+  min-capacity `C∞`, so `C∞ ≤ u log (v e^ε / (v - 1 + e^ε))`) and
   `I∞(X; Z) ≤ u log (v e^ε / (v - 1 + e^ε))` for every prior.
 * `sum_iSup_le_of_isEpsDeltaDP_ne`, `maxMultLeakage_le_of_isEpsDeltaDP_ne`,
   `minEntropyLeakage_le_of_isEpsDeltaDP_ne`: Theorem 1 for one individual (`u = 1`), stated
   directly for a channel on `v` pairwise adjacent inputs: `I∞(X; Z) ≤ log (v e^ε / (v - 1 + e^ε))`.
 * `exists_isEpsDeltaDP_hammingDist_minEntropyLeakage_eq`: **Proposition 1**: for every `u`, the
-  bound is attained, at the uniform prior, by the `u`-fold product of the `v`-ary randomized
-  response; `sum_iSup_eq_of_randomizedResponse` and `exists_isEpsDeltaDP_minEntropyLeakage_eq`
+  bound is attained by the `u`-fold product of the `v`-ary randomized response, both by the
+  leakage at the uniform prior and by the exponential of the min-capacity;
+  `sum_iSup_eq_of_randomizedResponse` and `exists_isEpsDeltaDP_minEntropyLeakage_eq`
   give the case of `v` pairwise adjacent inputs.
 * `isEpsDeltaDP_hammingDist_iff_ne`: for a single individual (`[Unique ι]`), the database setting
   and the setting of pairwise adjacent inputs coincide.
@@ -186,7 +188,8 @@ lemma log_card_mul_exp_div_le {v ε : ℝ} (hv : 1 ≤ v) (hε : 0 ≤ ε) :
   rw [Real.log_le_iff_le_exp h, div_le_iff₀ h1]
   nlinarith [exp_pos ε]
 
-/-- Multiplicative leakage at a prior is at least `1` and at most the capacity `ML×`. -/
+/-- Multiplicative leakage at a prior is at least `1` and at most `ML× = e^{C∞}`, the exponential
+of the min-capacity. -/
 lemma minEntropyLeakage_le_log_of_maxMultLeakage_le {α β : Type*} {mα : MeasurableSpace α}
     {mβ : MeasurableSpace β} [Finite α] [MeasurableSingletonClass α] [Fintype β]
     [MeasurableSingletonClass β] {κ : Kernel α β} [IsMarkovKernel κ] {μ : Measure α}
@@ -216,10 +219,10 @@ variable {ι 𝒳 Z : Type*} [Fintype ι] [Fintype 𝒳] [DecidableEq 𝒳] [Non
   {m𝒳 : MeasurableSpace 𝒳} [Fintype Z] {mZ : MeasurableSpace Z} [MeasurableSingletonClass Z]
   {K : Kernel (ι → 𝒳) Z} [IsMarkovKernel K] {ε : ℝ}
 
-/-- **Theorem 1 of Alvim et al.**, capacity form: if the randomized function `K` on databases
+/-- **Theorem 1 of Alvim et al.**, column-maxima form: if the randomized function `K` on databases
 `𝒳^ι` of `u = |ι|` individuals with `v = |𝒳|` values is `ε`-differentially private (neighbours
 differ in the value of exactly one individual), then the sum of the column maxima of its channel
-matrix is at most `(v e^ε / (v - 1 + e^ε))^u`. -/
+matrix (the exponential `e^{C∞}` of its min-capacity) is at most `(v e^ε / (v - 1 + e^ε))^u`. -/
 theorem sum_iSup_le_of_isEpsDeltaDP (hK : IsEpsDeltaDP K (fun S S' ↦ hammingDist S S' = 1) ε 0) :
     ∑ z, ⨆ x, K x {z} ≤ ENNReal.ofReal
       ((Fintype.card 𝒳 * exp ε / (Fintype.card 𝒳 - 1 + exp ε)) ^ Fintype.card ι) := by
@@ -239,9 +242,10 @@ theorem sum_iSup_le_of_isEpsDeltaDP (hK : IsEpsDeltaDP K (fun S S' ↦ hammingDi
 
 variable [MeasurableSingletonClass 𝒳]
 
-/-- **Theorem 1 of Alvim et al.**, for the min-capacity: the worst-case multiplicative
-leakage `ML× = max_π e^{I∞(X; Z)}` of an `ε`-differentially private randomized function on
-databases of `u` individuals with `v` values is at most `(v e^ε / (v - 1 + e^ε))^u`. -/
+/-- **Theorem 1 of Alvim et al.**, for the exponential of the min-capacity: the worst-case
+multiplicative leakage `ML× = max_π e^{I∞(X; Z)} = e^{C∞}` of an `ε`-differentially private
+randomized function on databases of `u` individuals with `v` values is at most
+`(v e^ε / (v - 1 + e^ε))^u`, i.e. its min-capacity is `C∞ ≤ u log (v e^ε / (v - 1 + e^ε))`. -/
 theorem maxMultLeakage_le_of_isEpsDeltaDP
     (hK : IsEpsDeltaDP K (fun S S' ↦ hammingDist S S' = 1) ε 0) :
     maxMultLeakage K ≤ ENNReal.ofReal
@@ -273,9 +277,10 @@ variable {𝒳 Z : Type*} [Fintype 𝒳] [Nonempty 𝒳] {m𝒳 : MeasurableSpac
   [Fintype Z] {mZ : MeasurableSpace Z} [MeasurableSingletonClass Z] {K : Kernel 𝒳 Z}
   [IsMarkovKernel K] {ε : ℝ}
 
-/-- **Theorem 1 of Alvim et al. for one individual** (`u = 1`), capacity form: if the channel `K`
-on an alphabet of `v` letters is `ε`-differentially private for the relation in which every two
-distinct inputs are adjacent, then `∑_z max_x K(z | x) ≤ v e^ε / (v - 1 + e^ε)`. -/
+/-- **Theorem 1 of Alvim et al. for one individual** (`u = 1`), column-maxima form: if the channel
+`K` on an alphabet of `v` letters is `ε`-differentially private for the relation in which every two
+distinct inputs are adjacent, then `∑_z max_x K(z | x) ≤ v e^ε / (v - 1 + e^ε)` (the left side is
+the exponential `e^{C∞}` of the min-capacity). -/
 theorem sum_iSup_le_of_isEpsDeltaDP_ne (hK : IsEpsDeltaDP K (· ≠ ·) ε 0) :
     ∑ z, ⨆ x, K x {z} ≤
       ENNReal.ofReal (Fintype.card 𝒳 * exp ε / (Fintype.card 𝒳 - 1 + exp ε)) := by
@@ -297,9 +302,9 @@ theorem sum_iSup_le_of_isEpsDeltaDP_ne (hK : IsEpsDeltaDP K (· ≠ ·) ε 0) :
 
 variable [MeasurableSingletonClass 𝒳]
 
-/-- **Theorem 1 of Alvim et al. for one individual** (`u = 1`): the min-capacity of an
-`ε`-differentially private channel on `v` pairwise adjacent inputs is at most
-`v e^ε / (v - 1 + e^ε)`. -/
+/-- **Theorem 1 of Alvim et al. for one individual** (`u = 1`): the exponential
+`ML× = e^{C∞}` of the min-capacity of an `ε`-differentially private channel on `v` pairwise
+adjacent inputs is at most `v e^ε / (v - 1 + e^ε)`, i.e. `C∞ ≤ log (v e^ε / (v - 1 + e^ε))`. -/
 theorem maxMultLeakage_le_of_isEpsDeltaDP_ne (hK : IsEpsDeltaDP K (· ≠ ·) ε 0) :
     maxMultLeakage K ≤
       ENNReal.ofReal (Fintype.card 𝒳 * exp ε / (Fintype.card 𝒳 - 1 + exp ε)) := by
@@ -428,7 +433,8 @@ theorem sum_iSup_eq_of_randomizedResponse [DecidableEq 𝒳] (hε : 0 ≤ ε) {K
 /-- **Proposition 1 of Alvim et al. for one individual** (`u = 1`): the bound of
 `minEntropyLeakage_le_of_isEpsDeltaDP_ne` is tight. For `ε ≥ 0` there is an `ε`-differentially
 private channel on `v` pairwise adjacent inputs (the randomized response) whose min-entropy leakage
-for the uniform prior, and whose min-capacity, are `log (v e^ε / (v - 1 + e^ε))`. -/
+for the uniform prior, and whose min-capacity, are `log (v e^ε / (v - 1 + e^ε))`; the Lean
+statement gives the min-capacity through its exponential `ML× = v e^ε / (v - 1 + e^ε)`. -/
 theorem exists_isEpsDeltaDP_minEntropyLeakage_eq (hε : 0 ≤ ε) :
     ∃ K : Kernel 𝒳 𝒳, IsMarkovKernel K ∧ IsEpsDeltaDP K (· ≠ ·) ε 0 ∧
       maxMultLeakage K =
@@ -506,8 +512,9 @@ private lemma rr_le (hε : 0 ≤ ε) {c : ℝ} (hc : 0 ≤ c) (a a' b : 𝒳) :
 
 /-- **Proposition 1 of Alvim et al.**: the bound of Theorem 1 is tight for every number `u` of
 individuals. For `ε ≥ 0`, the `u`-fold product of the `v`-ary randomized response is
-`ε`-differentially private on databases `𝒳^ι` (neighbours differ in one individual), its
-min-capacity is `(v e^ε / (v - 1 + e^ε))^u`, and its min-entropy leakage for the uniform prior is
+`ε`-differentially private on databases `𝒳^ι` (neighbours differ in one individual), the
+exponential `ML× = e^{C∞}` of its min-capacity is `(v e^ε / (v - 1 + e^ε))^u` (so
+`C∞ = u log (v e^ε / (v - 1 + e^ε))`), and its min-entropy leakage for the uniform prior is
 `u log (v e^ε / (v - 1 + e^ε))`. -/
 theorem exists_isEpsDeltaDP_hammingDist_minEntropyLeakage_eq [DecidableEq ι] (hε : 0 ≤ ε) :
     ∃ K : Kernel (ι → 𝒳) (ι → 𝒳), IsMarkovKernel K ∧

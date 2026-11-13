@@ -600,14 +600,17 @@ theorem isMarkovKernel_outputPerturbation {β : ℝ≥0} (hβ : 0 < β) :
 Theorem 1 of Chaudhuri–Monteleoni–Sarwate, an instance of Fact 7 of Chatzikokolakis–Andrés–
 Bordenabe–Palamidessi): for `β > 0`, output perturbation is a Markov kernel and, for all centres
 `c, c'` and events `S`, `P(c + b ∈ S) ≤ e^{β‖c - c'‖} P(c' + b ∈ S)`. (The inequality holds for
-every `β`, but at `β = 0` the kernel is `0` and it is vacuous.) -/
+every `β`. At `β = 0`, if `E` has positive dimension then `α = ∞`, the kernel is `0` and the
+inequality is vacuous; if `E` is zero-dimensional, `α = 1` and the kernel is the Dirac mass at
+`0` for every `β`.) -/
 theorem isMetricDP_outputPerturbation {β : ℝ≥0} (hβ : 0 < β) :
     IsMarkovKernel (outputPerturbation (E := E) β) ∧
       IsMetricDP (outputPerturbation (E := E) β) fun c c' ↦ β * edist c c' :=
   ⟨isMarkovKernel_outputPerturbation hβ,
     MetricDP.isMetricDP_laplaceMech_edist volume measurable_const β⟩
 
-/-- The likelihood-ratio bound of the sensitivity method, for every `β` (vacuous at `β = 0`). -/
+/-- The likelihood-ratio bound of the sensitivity method, for every `β` (vacuous at `β = 0` when
+`E` has positive dimension, since the kernel is then `0`). -/
 private lemma le_smul_of_norm_sub_le {β : ℝ≥0} {c c' : E} {Δ ε : ℝ} (hcc' : ‖c - c'‖ ≤ Δ)
     (hβ : β * Δ ≤ ε) :
     outputPerturbation β c ≤ ENNReal.ofReal (exp ε) • outputPerturbation β c' := by

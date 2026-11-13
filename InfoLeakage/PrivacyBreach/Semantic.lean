@@ -220,7 +220,9 @@ lemma posterior_nonneg (hb : ∀ x, 0 ≤ b x) (hA : ∀ x t, 0 ≤ A x t) (x : 
     0 ≤ posterior b A t x :=
   div_nonneg (mul_nonneg (hb x) (hA x t)) (sum_nonneg fun z _ ↦ mul_nonneg (hb z) (hA z t))
 
-/-- The posterior is a probability vector when the transcript has positive probability. -/
+/-- The posterior entries sum to one when the denominator `outputLaw b A t` is nonzero. (The
+hypotheses allow signed `b` and `A`; for the posterior to be a probability vector, combine with
+`posterior_nonneg`.) -/
 lemma sum_posterior (h : outputLaw b A t ≠ 0) : ∑ x, posterior b A t x = 1 := by
   simp_rw [posterior, ← sum_div]
   exact div_self h

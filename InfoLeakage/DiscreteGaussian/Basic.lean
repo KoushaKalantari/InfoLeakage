@@ -96,7 +96,8 @@ and the variance parameter `v = σ² : ℝ≥0` of the continuous Gaussian it di
 
 ## Not formalized
 
-The tight approximate-DP bound (Theorem 7, Lemmas 9–11), the improved conversion from
+The approximate-DP bound of Theorem 7 (with Lemmas 9–11; see the notes on the paper for its
+missing integer-sensitivity hypothesis), the improved conversion from
 concentrated to approximate DP (Proposition 12, Corollary 13), the exact multivariate bound
 (Theorem 15), Facts 18–20 (beyond the mean for integer `μ`), the sharper variance and tail
 bounds of Section 3.2 (Proposition 21 onward), the discrete Laplace comparison (Section 4) and
@@ -108,6 +109,15 @@ the sampling algorithms (Section 5).
   "Without loss of generality, `ν = 0` and `α > 1`" and never treats `α = 1`. This is an
   expository gap only: the statement is true at `α = 1`, with equality
   (`renyiDiv_one_discreteGaussian`).
+* Theorem 7 (arXiv v6, Section 2.2, p. 8; not formalized here) allows any real sensitivity
+  `Δ > 0`, but its formula (4),
+  `δ = P[Y > εσ² / Δ - Δ / 2] - e^ε P[Y > εσ² / Δ + Δ / 2]` with `Y ∼ N_ℤ(0, σ²)`, needs `Δ` to be
+  an integer. With `Δ = 1/2`, `σ = 1`, `ε = 1/4` (e.g. a constant query) it gives
+  `δ = P[Y > 1/4] - e^{1/4} P[Y > 3/4] = (1 - e^{1/4}) P[Y ≥ 1] < 0`, since `Y` is
+  integer-valued, and no mechanism is `(ε, δ)`-differentially private with `δ < 0` (take the empty
+  event). Likewise, its claim that (4) is "the smallest possible value of `δ`" is a worst-case
+  statement over queries of sensitivity `Δ`: for a particular query it is sharp only if that query
+  attains the sensitivity `Δ` on some pair of neighbours.
 -/
 
 @[expose] public section
@@ -783,8 +793,10 @@ theorem isZCDP_discreteGaussianMechanism {q : 𝒟 → ℤ} (hq_meas : Measurabl
 hypotheses of Theorem 4 of Canonne–Kamath–Steinke, the mechanism `M(S) = q(S) + Y` with
 `Y ∼ N_ℤ(0, Δ² / ε²)` is `(ε² / 2 + ε √(2 log (1 / δ)), δ)`-differentially private for every
 `δ > 0`. This is the conversion stated after Definition 3 of the paper (from Bun–Steinke,
-`IsZCDP.isEpsDeltaDP'`), applied to Theorem 4; it is weaker than the paper's tight bound
-(Theorem 7), which is not formalized. -/
+`IsZCDP.isEpsDeltaDP'`), applied to Theorem 4. It is weaker than the paper's Theorem 7 (not
+formalized), whose `δ` is optimal in the worst case over queries of sensitivity `Δ` but which, as
+printed, needs an integer `Δ` (see the notes on the paper); this theorem needs no such
+restriction. -/
 theorem isEpsDeltaDP_discreteGaussianMechanism {q : 𝒟 → ℤ} (hq_meas : Measurable q) {Δ ε : ℝ}
     (hΔ : 0 < Δ) (hε : 0 < ε) (hq : ∀ ⦃S S'⦄, Adj S S' → |(q S : ℝ) - q S'| ≤ Δ) {δ : ℝ}
     (hδ : 0 < δ) :

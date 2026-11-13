@@ -26,7 +26,8 @@ Sections 3.1 and 4.1 ([ABCP]). Privacy is `IsMetricDP` from `InfoLeakage.MetricP
 
 * `MetricDP.laplaceMech ν λ d`: the Laplace mechanism from `(Z, d)` to `Z`, for an extended
   distance `d`, with density `λ(z) e^{-d(y, z)}` (`e^{-∞} = 0`, `MetricDP.expNeg`) with respect
-  to `ν` (Definition 6 of [CABP]).
+  to `ν` (Definition 6 of [CABP]), when this density is jointly measurable in `(y, z)`; otherwise
+  it is the zero kernel.
 * `IsGeoInd K ε`: `ε`-geo-indistinguishability (Definition 3.1 of [ABCP]).
 * `GeoInd.IsPrivateWithin K ℓ r`: `ℓ`-privacy within radius `r` (Section 3.1 of [ABCP]).
 * `planarLaplacePDFReal ε x`, `planarLaplace ε`: the planar Laplacian
@@ -126,7 +127,10 @@ lemma expNeg_le_mul {a s t : ℝ≥0∞} (ha : a ≠ ∞) (h : t ≤ a + s) :
 /-- The **Laplace mechanism** from `(Z, d)` to `Z` (Definition 6 of Chatzikokolakis–Andrés–
 Bordenabe–Palamidessi, with secrets and outputs in the same space `Z` and `d` an extended
 distance on `Z`): on input `y` it has density `z ↦ λ(z) e^{-d(y, z)}` (with `e^{-∞} = 0`)
-with respect to a reference measure `ν`. The scaling function `λ` is a parameter;
+with respect to a reference measure `ν`, provided the joint density
+`(y, z) ↦ λ(z) e^{-d(y, z)}` is measurable (e.g. `λ` measurable and `d` jointly measurable, as
+`isMetricDP_laplaceMech` assumes). No measurability is required here: otherwise
+`Kernel.withDensity` returns the zero kernel. The scaling function `λ` is a parameter;
 Definition 6 requires it to make every `λ(·) e^{-d(y, ·)}` a probability density, which is
 needed only for the kernel to be Markov, not for privacy (`isMetricDP_laplaceMech`). Secrets
 in a subset `Y ⊆ Z` are handled by restricting the kernel along the inclusion

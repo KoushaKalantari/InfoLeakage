@@ -171,8 +171,11 @@ theorem mul_sub_le_integral_rpow_sub_one {P Q : Measure Y} [IsProbabilityMeasure
         simp
 
 /-- The hockey-stick divergence is bounded by the Hellinger divergence: for probability measures,
-`α > 1` and `λ > 1`, `E_λ(P ‖ Q) ≤ (α - 1) χ^α(P ‖ Q) / (α (λ ^ (α - 1) - 1))`, where `χ^α` is
-Statlib's `hellingerDiv α` (the `χ^α`-divergence of Asoodeh et al.). -/
+`α > 1`, `λ > 1` and **finite** `χ^α(P ‖ Q)` (`hellingerDiv α P Q ≠ ∞`),
+`E_λ(P ‖ Q) ≤ (α - 1) χ^α(P ‖ Q) / (α (λ ^ (α - 1) - 1))`, where `χ^α` is Statlib's
+`hellingerDiv α` (the `χ^α`-divergence of Asoodeh et al.). The bound is stated in `ℝ` through
+`(hellingerDiv α P Q).toReal`, so the finiteness hypothesis is needed: for `χ^α = ∞` the bound
+is vacuous, but `.toReal` would turn its right side into `0`. -/
 theorem hockeyStickDiv_le_hellingerDiv {P Q : Measure Y} [IsProbabilityMeasure P]
     [IsProbabilityMeasure Q] {α l : ℝ} (hα : 1 < α) (hl : 1 < l) (h : hellingerDiv α P Q ≠ ∞) :
     hockeyStickDiv l P Q ≤ (α - 1) * (hellingerDiv α P Q).toReal / (α * (l ^ (α - 1) - 1)) := by

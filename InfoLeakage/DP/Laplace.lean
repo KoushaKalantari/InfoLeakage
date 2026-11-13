@@ -338,8 +338,13 @@ variable [MeasurableSpace 𝒟] {f : 𝒟 → ι → ℝ}
 
 /-- **The Laplace mechanism for vector-valued queries** `M_L(x, f, ε) = f(x) + (Y_1, …, Y_k)`
 with `Y_i` i.i.d. `Lap(b)` (Dwork–Roth, Definition 3.3, with the coordinates indexed by a finite
-type `ι` and the noise scale `b` as a parameter; Dwork–Roth take `b = Δf / ε`). It is the kernel
-with density `y ↦ ∏_i Lap(y_i | f(x)_i, b)` with respect to Lebesgue measure on `ι → ℝ`. -/
+type `ι` and the noise scale `b` as a parameter; Dwork–Roth take `b = Δf / ε`). It is built as
+`Kernel.withDensity` of the constant kernel `x ↦ volume` on `ι → ℝ` with density
+`(x, y) ↦ ∏_i Lap(y_i | f(x)_i, b)`. This is the intended mechanism, with output law
+`∏_i Lap(f(x)_i, b)`, when that density is jointly measurable (for instance when `f` is
+measurable, `laplaceMechanismPi_apply`) and `b > 0` (so that it is normalized,
+`isMarkovKernel_laplaceMechanismPi`); `Kernel.withDensity` returns the **zero kernel** when the
+density is not jointly measurable. -/
 noncomputable def laplaceMechanismPi (f : 𝒟 → ι → ℝ) (b : ℝ) : Kernel 𝒟 (ι → ℝ) :=
   (Kernel.const 𝒟 volume).withDensity fun x y ↦ ENNReal.ofReal (laplacePiPDFReal (f x) b y)
 

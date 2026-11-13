@@ -36,11 +36,15 @@ divergence of order `1/2`, `hellingerDiv 2⁻¹ μ ν`, which is **twice** Statl
 
 ## Main statements (book result → Lean name)
 
-* (7.4), the χ²-divergence as an f-divergence: `chiSqDivFun_apply`, `chiSqDiv_eq_hellingerDiv`;
+* (7.4), the χ²-divergence as an f-divergence: `chiSqDivFun_apply`, `chiSqDiv_eq_hellingerDiv`,
+  `chiSqDiv_of_absolutelyContinuous`, and `χ² = ∞` without absolute continuity for σ-finite
+  measures, `chiSqDiv_of_not_absolutelyContinuous`;
   data processing (Theorem 7.4 for `f(x) = (x - 1)²`): `chiSqDiv_comp_right_le`.
 * (7.34), `D(P ‖ Q) ≤ log (1 + χ²(P ‖ Q)) ≤ χ²(P ‖ Q)`:
-  `klDiv_le_ofReal_log_one_add_toReal_chiSqDiv`, `ofReal_log_one_add_toReal_chiSqDiv_le`, and the
-  combined bound `klDiv_le_chiSqDiv` (proved directly, without finiteness assumption).
+  `klDiv_le_ofReal_log_one_add_toReal_chiSqDiv` (for `χ² < ∞`),
+  `ofReal_log_one_add_toReal_chiSqDiv_le` (meaningful for `χ² < ∞`; its `χ² = ∞` case is the
+  trivial `0 ≤ ∞` given by the `toReal ∞ = 0` convention), and the combined bound
+  `klDiv_le_chiSqDiv` (proved directly, without finiteness assumption).
 * (7.33), weak form `D(P ‖ Q) ≥ H²(P, Q)`: `hellingerDiv_inv_two_le_klDiv`,
   `two_mul_sqHellinger_le_klDiv`.
 * (7.37), `TV(P, Q) ≤ (1/2) √(χ²(P ‖ Q))`, that is `tvDist μ ν ^ 2 ≤ χ²(μ ‖ ν)` in Mathlib's
@@ -84,9 +88,28 @@ lemma chiSqDivFun_apply {x : ℝ≥0∞} (hx : x ≠ ∞) :
 lemma derivAtTop_chiSqDivFun : chiSqDivFun.derivAtTop = ∞ :=
   derivAtTop_hellingerDivFun_of_one_le one_le_two
 
-/-- The χ²-divergence `χ²(μ ‖ ν) = ∫ (dμ/dν - 1)² dν` (Polyanskiy–Wu, (7.4)), the f-divergence for
-`f(x) = (x - 1)²`. It is infinite if `μ` is not absolutely continuous with respect to `ν`. -/
+/-- The χ²-divergence `χ²(μ ‖ ν)` (Polyanskiy–Wu, (7.4)), the f-divergence for `f(x) = (x - 1)²`.
+If `μ ≪ ν` (and `μ` is σ-finite) it is `∫ (dμ/dν - 1)² dν` (`chiSqDiv_of_absolutelyContinuous`).
+For σ-finite `μ` and `ν` it is infinite if `μ` is not absolutely continuous with respect to `ν`
+(`chiSqDiv_of_not_absolutelyContinuous`). Without σ-finiteness the latter can fail: when `μ` has no
+Lebesgue decomposition with respect to `ν`, Mathlib's `rnDeriv` and `singularPart` default to `0`,
+and for instance `chiSqDiv` of the counting measure on `[0, 1]` and the uniform distribution on
+`[0, 1]` is `1`. -/
 noncomputable def chiSqDiv (μ ν : Measure α) : ℝ≥0∞ := fDiv chiSqDivFun μ ν
+
+/-- If `μ ≪ ν`, then `χ²(μ ‖ ν) = ∫ (dμ/dν - 1)² dν` (Polyanskiy–Wu, (7.4)). -/
+lemma chiSqDiv_of_absolutelyContinuous [SigmaFinite μ] (h : μ ≪ ν) :
+    chiSqDiv μ ν = ∫⁻ x, ENNReal.ofReal ((((∂μ/∂ν) x).toReal - 1) ^ 2) ∂ν := by
+  rw [chiSqDiv, fDiv_of_absolutelyContinuous h]
+  refine lintegral_congr_ae ?_
+  filter_upwards [μ.rnDeriv_lt_top ν] with x hx
+  exact chiSqDivFun_apply hx.ne
+
+/-- For σ-finite measures, the χ²-divergence is infinite if `μ` is not absolutely continuous with
+respect to `ν`. The σ-finiteness cannot be dropped (see `chiSqDiv`). -/
+lemma chiSqDiv_of_not_absolutelyContinuous [SigmaFinite μ] [SigmaFinite ν] (h : ¬ μ ≪ ν) :
+    chiSqDiv μ ν = ∞ :=
+  fDiv_of_not_ac derivAtTop_chiSqDivFun h
 
 /-- The χ²-divergence is the Hellinger divergence of order `2`. -/
 lemma chiSqDiv_eq_hellingerDiv (μ ν : Measure α) : chiSqDiv μ ν = hellingerDiv 2 μ ν := rfl
@@ -125,8 +148,10 @@ theorem klDiv_le_ofReal_log_one_add_toReal_chiSqDiv [IsProbabilityMeasure μ]
         ← mul_hellingerDiv_add_meas_eq_integral two_pos (by norm_num) h]
       norm_num
 
-/-- `log (1 + χ²) ≤ χ²` (Polyanskiy–Wu, (7.34)), stated in `ℝ≥0∞` so that it is also meaningful
-when `χ²(μ ‖ ν) = ∞`. -/
+/-- `log (1 + χ²) ≤ χ²` (Polyanskiy–Wu, (7.34)) when `χ²(μ ‖ ν) < ∞`. The statement carries no
+finiteness hypothesis, but its case `χ²(μ ‖ ν) = ∞` is only a convention artifact: there the left
+side is `ofReal (log (1 + toReal ∞)) = ofReal (log 1) = 0`, so the inequality reads `0 ≤ ∞`, not an
+extended-logarithm form `log (1 + ∞) = ∞ ≤ ∞` of (7.34). -/
 lemma ofReal_log_one_add_toReal_chiSqDiv_le (μ ν : Measure α) :
     ENNReal.ofReal (log (1 + (chiSqDiv μ ν).toReal)) ≤ chiSqDiv μ ν := by
   by_cases h : chiSqDiv μ ν = ∞

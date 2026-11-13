@@ -51,7 +51,7 @@ multiplicative leakage `PR_o / PR_i` with the additive leakage `PR_o - PR_i`.
 * `maxMultLeakage_eq`: **Braun et al., Proposition 5.1**: `ML× = L×(π_u) = ∑_y max_x C[x, y]`.
 * `maxLeakage_eq_log_maxMultLeakage`, `multLeakage_le_maxLeakageSum`: link with the maximal
   leakage `maxLeakage` of Issa, Wagner and Kamath: at any full-support prior it equals the
-  min-capacity `log ML×`, and it bounds `L×(π)` at every prior.
+  min-capacity `log ML×`, and its exponential bounds `L×(π)` at every prior.
 * `postVulnerability_add_smul_le`: **Braun et al., Proposition 6.4**: `PR_o` is convex.
 * `exists_isGreatest_addLeakage_uniformOn`, `exists_maxAddLeakage_eq`: **Braun et al.,
   Corollary 6.5**: `ML+` is attained on a corner point, the uniform prior on a nonempty set.
@@ -494,8 +494,10 @@ noncomputable def maxAddLeakage (κ : Kernel α β) : ℝ :=
 variable [Finite α] [MeasurableSingletonClass α] [MeasurableSingletonClass β]
 
 omit [Finite α] [MeasurableSingletonClass α] [MeasurableSingletonClass β] in
-/-- The multiplicative leakage is at most the maximal leakage of Issa, Wagner and Kamath:
-`L×(π) ≤ ∑_y max_{x ∈ supp π} C[x, y]`. -/
+/-- The multiplicative leakage is at most the exponential of the maximal leakage of Issa, Wagner
+and Kamath: `L×(π) ≤ ∑_y max_{x ∈ supp π} C[x, y]`, the sum whose logarithm is `maxLeakage μ κ`.
+(It is not bounded by the maximal leakage itself: for the noiseless binary channel and the
+uniform prior, `L×(π) = 2` while the maximal leakage is `log 2`.) -/
 lemma multLeakage_le_maxLeakageSum : multLeakage μ κ ≤ maxLeakageSum μ κ := by
   refine ENNReal.div_le_of_le_mul ?_
   rw [maxLeakageSum, Finset.sum_mul]

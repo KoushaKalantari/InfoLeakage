@@ -29,10 +29,12 @@ level, and a mechanism `M` is `f`-DP if `T(M(S), M(S')) ≥ f` for all neighbour
 **Scope.** Everything is stated for a **finite output alphabet** `Y` with measurable singletons:
 distributions are (probability) measures on `Y`, expectations are finite sums
 `E_P[φ] = ∑_y P{y} φ(y)`, and a mechanism is a Markov kernel `M : Kernel 𝒟 Y` from datasets to
-outputs. The neighbouring relation `Adj` is an arbitrary relation, assumed symmetric
-(`[Std.Symm Adj]`) where the paper's "differ in one record" relation is used symmetrically. On a
-finite alphabet the infimum defining `T(P, Q)` is attained by compactness
-(`exists_tradeoff_eq`), which replaces the Neyman–Pearson arguments of the paper.
+outputs (the predicates `IsFDP` and `IsEpsDeltaDP` accept any kernel; their privacy meaning, and
+the principal theorems, require `[IsMarkovKernel M]`). The neighbouring relation `Adj` is an
+arbitrary relation, assumed symmetric (`[Std.Symm Adj]`) where the paper's "differ in one
+record" relation is used symmetrically. On a finite alphabet the infimum defining `T(P, Q)` is
+attained by compactness (`exists_tradeoff_eq`), which replaces the Neyman–Pearson arguments of
+the paper.
 
 ## Main definitions
 
@@ -351,8 +353,15 @@ theorem tradeoff_self [IsProbabilityMeasure P] (h₀ : 0 ≤ α) (h₁ : α ≤ 
   simp only [typeIIError]
   linarith
 
-/-- The left-continuous inverse `f⁻¹(α) = inf {t ∈ [0, 1] : f(t) ≤ α}` of a non-increasing
-function, equation (4) of Dong–Roth–Su. -/
+/-- The left-continuous inverse `f⁻¹(α) = inf {t ∈ [0, 1] : f(t) ≤ α}`, equation (4) of
+Dong–Roth–Su. It is defined for every `f : ℝ → ℝ` and `α : ℝ`, but it is the paper's inverse
+only for a trade-off function `f` and a level `α ∈ [0, 1]`.
+
+**Empty-set convention.** When no `t ∈ [0, 1]` has `f t ≤ α`, the infimum is over the empty
+set and Lean returns `sInf ∅ = 0`, which has no inverse interpretation (e.g. `f ≡ 1`, `α = 0`
+gives `0`). The results using `tradeoffInv` (`tradeoff_swap_eq_tradeoffInv`,
+`tradeoffInv_mono`, `IsFDP.max_tradeoffInv`) carry hypotheses that keep the set nonempty in
+their intended applications. -/
 noncomputable def tradeoffInv (f : ℝ → ℝ) (α : ℝ) : ℝ :=
   sInf {t | t ∈ Icc (0 : ℝ) 1 ∧ f t ≤ α}
 
@@ -430,7 +439,15 @@ relation `Adj` if `T(M(S), M(S')) ≥ f` on `[0, 1]` for all neighbouring `S, S'
 The paper takes `f` to be a trade-off function and `Adj` to be "differ in exactly one record";
 here `f : ℝ → ℝ` and `Adj` are arbitrary, and the results that need the neighbouring relation to
 be symmetric assume it. As for `tradeoff`, this is the paper's notion only when singletons of
-`Y` are measurable (`[MeasurableSingletonClass Y]`, assumed by every result below). -/
+`Y` are measurable (`[MeasurableSingletonClass Y]`, assumed by every result below).
+
+**Markov requirement (documented, not enforced).** The predicate accepts an arbitrary `Kernel`,
+and a Mathlib `Kernel` need not be Markov. It is an unrestricted algebraic extension whose
+privacy interpretation requires `[IsMarkovKernel M]`: e.g. for the zero kernel every
+`T(0, 0)(α)` with `α ≥ 0` is `1`, so the zero kernel is `f`-DP for every `f ≤ 1` on `[0, 1]`,
+although it is no randomized mechanism; for infinite measures `toReal ∞ = 0` also distorts
+the errors. The principal theorems below (`IsFDP.comp`, `isEpsDeltaDP_iff_isFDP`,
+`IsFDP.max_tradeoffInv`, `IsFDP.group`, …) assume `[IsMarkovKernel M]`. -/
 def IsFDP [Fintype Y] (M : Kernel 𝒟 Y) (Adj : 𝒟 → 𝒟 → Prop) (f : ℝ → ℝ) : Prop :=
   ∀ ⦃S S'⦄, Adj S S' → ∀ α ∈ Icc (0 : ℝ) 1, f α ≤ tradeoff (M S) (M S') α
 
@@ -457,7 +474,13 @@ end FDP
 
 /-- **`(ε, δ)`-differential privacy** (Definition 1.1 of Dong–Roth–Su): for all neighbouring
 `S, S'` and every event `E`, `P[M(S) ∈ E] ≤ e^ε P[M(S') ∈ E] + δ`. On a finite alphabet with
-measurable singletons every set is an event. -/
+measurable singletons every set is an event.
+
+**Markov requirement (documented, not enforced).** As for `IsFDP`, `M` is an arbitrary
+`Kernel`, not necessarily Markov, so this is an unrestricted algebraic extension whose privacy
+interpretation requires `[IsMarkovKernel M]`: e.g. the zero kernel satisfies
+`IsEpsDeltaDP 0 Adj 0 0`, and for infinite measures `Measure.real` reads `∞` as `0`. Every
+result below relating it to `f`-DP assumes `[IsMarkovKernel M]`. -/
 def IsEpsDeltaDP (M : Kernel 𝒟 Y) (Adj : 𝒟 → 𝒟 → Prop) (ε δ : ℝ) : Prop :=
   ∀ ⦃S S'⦄, Adj S S' → ∀ E : Set Y, (M S).real E ≤ exp ε * (M S').real E + δ
 

@@ -75,9 +75,12 @@ relation; datasets live in an arbitrary measurable space, the noise is the Lapla
 
 ## Notes on the paper
 
-* Dwork–Roth, proof of Claim 3.9 (Section 3.3, pp. 35–37): `r* = min_{r_i} : c_i + r_i > c_j + r_j
-  ∀ j ≠ i` is an infimum, not a minimum (the set is an open half-line), so "`i` is the output iff
-  `r_i ≥ r*`" should read `r_i > r*`. This is immaterial (`P[r_i = r*] = 0`); the claim is true.
+* Dwork–Roth, proof of Claim 3.9 (Section 3.3, pp. 35–37): for `m ≥ 2` queries,
+  `r* = min_{r_i} : c_i + r_i > c_j + r_j ∀ j ≠ i` is an infimum, not a minimum (the set is an
+  open half-line), so "`i` is the output iff `r_i ≥ r*`" should read `r_i > r*`. This is
+  immaterial (`P[r_i = r*] = 0`); the claim is true. For `m = 1` the set is all of `ℝ` (no finite
+  infimum), and the mechanism deterministically outputs the single index, which is trivially
+  private; `isEpsDP_reportNoisyMax_countingQuery` covers every `m ≥ 1`.
 * Dwork–Roth, proof of Theorem 3.23 (Section 3.6, pp. 57–58): the proof only treats outputs of
   the form `⊥^{k-1} ⊤`. For a finite stream of `m` queries the output `⊥^m` (no query above the
   threshold) also occurs, and is not covered. It follows from the same argument with the
@@ -89,8 +92,10 @@ relation; datasets live in an arbitrary measurable space, the noise is the Lapla
 * Accuracy (Theorems 3.24 and later), `Sparse` with `c > 1` positive answers, NumericSparse,
   Lyu–Su–Li's Algs. 1 and 7 for `c > 1` or `ε₃ > 0`, their monotone-query refinement, and the
   other non-private variants (Algs. 3, 4, 6). General sensitivity `Δ` and per-query thresholds
-  `T_i` are not stated separately; they follow by the trivial rescaling `r_i = (q_i - T_i)/Δ`
-  of the queries (cf. Lyu–Su–Li's footnote on `r_i = q_i - T_i`).
+  `T_i` are not stated separately; for `Δ > 0` they follow by the trivial rescaling
+  `r_i = (q_i - T_i)/Δ` of the queries (cf. Lyu–Su–Li's footnote on `r_i = q_i - T_i`). The
+  rescaling does not cover `Δ = 0` (Lean's `x / 0 = 0` collapses every query to `0`); that case is
+  separate and trivial, since queries that do not change on neighbours give the same output law.
 -/
 
 @[expose] public section

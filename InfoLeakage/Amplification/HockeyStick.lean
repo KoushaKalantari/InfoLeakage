@@ -25,12 +25,16 @@ tool of the paper is advanced joint convexity (Theorem 2): for overlapping mixtu
 `μ = (1 - η) μ₀ + η μ₁` and `μ' = (1 - η) μ₀ + η μ₁'`,
 `D_{α'}(μ ‖ μ') = η D_α(μ₁ ‖ (1 - β) μ₀ + β μ₁')` with `α' = 1 + η (α - 1)`, `β = α' / α`.
 
-**Scope.** The divergence is defined for measures on an arbitrary measurable space and all results
-except the closed form `hockeyStickDiv_eq_sum` and the data-processing inequality
-`hockeyStickDiv_comp_le` (which need a finite alphabet) hold for arbitrary finite measures (the
-paper uses probability measures). Mixtures are written with `ℝ≥0` weights, `(1 - η) • μ₀ + η • μ₁`
-with `η ≤ 1`, and divergence orders are real numbers `α ≥ 1`. Mechanisms are kernels
-`M : Kernel 𝒟 Y` and `(ε, δ)`-DP is the library's `IsEpsDeltaDP`.
+**Scope.** The divergence is defined for measures on an arbitrary measurable space. The divergence
+identities and inequalities (nonnegativity, monotonicity in `γ`, joint convexity, advanced joint
+convexity) hold for arbitrary finite measures (the paper uses probability measures), except the
+closed form `hockeyStickDiv_eq_sum` and the data-processing inequality `hockeyStickDiv_comp_le`,
+which also need a finite alphabet. The unit bounds `hockeyStickDiv_le_one` and
+`privacyProfile_le_one`, and the results built on them, need the probability or Markov hypotheses
+they state: for finite measures they fail, e.g. `D_1(2 δ_z ‖ 0) = 2`. Mixtures are written with
+`ℝ≥0` weights, `(1 - η) • μ₀ + η • μ₁` with `η ≤ 1`, and divergence orders are real numbers
+`α ≥ 1`. Mechanisms are kernels `M : Kernel 𝒟 Y` and `(ε, δ)`-DP is the library's
+`IsEpsDeltaDP`.
 
 ## Main definitions
 

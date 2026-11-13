@@ -76,18 +76,29 @@ sampling without replacement. Theorem 7 itself is not used.
   `ψ_p(ε)` iff `p ≥ 1 / (1 + e^ε)`; so the claim holds for all `ε ≥ 0` iff `p ≥ 1/2`. For `p = 0`
   the divergence is `1` while `ψ₀(ε) = 0` (`Amplification.hockeyStickDiv_randResp_zero`). (For
   `e^ε ≥ 1` the two-term value equals `ψ_{max(p, 1 - p)}(ε)`; that identity is not formalized.)
-  The value `η ψ_p(ε)` of Lemma 12 inherits this restriction.
+  Lemma 12 inherits this error: its value `η ψ_p(ε)` for the privacy profile of the subsampled
+  `M_{v,p}` rests on the Section 5 claim, and is wrong (when `η > 0`) for `p < 1 / (1 + e^ε)`,
+  e.g. `p = 0`.
+  Theorem 13's tightness survives with the corrected divergence: the theorems below state it as
+  an equality of privacy profiles, with the two-term value, for every `p ∈ [0, 1]`.
 * Lemma 12 (p. 11, proof in Appendix C) has a second, independent gap: the last step of its proof
   replaces `θ* = sup_{x ≃ x', v ∈ x \ x'} Pr_{y ∼ S(x)}[v ∈ y]` by
   `η = sup_{x ≃ x'} TV(S(x), S(x'))`, and these differ for general natural subsampling mechanisms.
   For example, take `U = {v, w}`, datasets of size `1` under `≃ₛ`, and the natural `S` keeping `v`
   with probability `0.1` and `w` with probability `0.5`; then `η = 0.5`, but for `p = 1` and
-  `ε = 0` the supremum of the divergences is `0.1`, not `η ψ_1(0) = 0.5`. The value is governed by
-  `θ*` instead: a pair with `v ∈ x \ x'` gives exactly `θ D_{1 + (e^{ε'} - 1) / θ}(ν₁ ‖ ν₀)` with
-  `θ = Pr_{y ∼ S(x)}[v ∈ y]` (by `hockeyStickDiv_mixture_left_eq`), which is `η ψ_p(ε)` (for
-  `p ≥ 1/2`) when `θ = η`. Since `θ* = η` for `S^po`, `S^wo` and `S^wr`, Theorem 13 is
-  unaffected; it is proved here for Theorems 8 and 9 and every `p ∈ [0, 1]`, stated as equality of
-  privacy profiles.
+  `ε = 0` the supremum of the divergences is `0.1`, not `η ψ_1(0) = 0.5`. For a
+  membership-crossing pair (`v ∈ x \ x'`, for the record `v` of `M_{v,p}`) the divergence is
+  exactly `θ D_{1 + (e^{ε'} - 1) / θ}(ν₁ ‖ ν₀)` with `θ = Pr_{y ∼ S(x)}[v ∈ y]` (by
+  `hockeyStickDiv_mixture_left_eq`), which is `η ψ_p(ε)` (for `p ≥ 1/2`) when `θ = η`. This does
+  not characterize the general profile: pairs in which both datasets contain `v` also contribute
+  and can dominate. For example (from an independent review; not formalized), take datasets
+  `a = {v}`, `b = {w}`, `c = {v, w}` with the symmetric adjacency edges `a ≃ b` and `a ≃ c`, and
+  the natural `S` that keeps its whole input with probability `0.1`, `0.1`, `0.9` respectively and
+  otherwise returns `∅`. For `p = 1` and `ε = 0` the pair `(c, a)` gives `0.8`, while the only
+  membership-crossing pair for `v`, `(a, b)`, gives `θ = 0.1`. For `S^po`, `S^wo` and `S^wr`,
+  Theorems 8–10 bound every pair by `η δ_M(ε)` and a membership-crossing pair with
+  `θ = θ* = η` attains this bound, so Theorem 13 is unaffected; it is proved here for Theorems 8
+  and 9 and every `p ∈ [0, 1]`, stated as equality of privacy profiles.
 
 ## Not formalized
 

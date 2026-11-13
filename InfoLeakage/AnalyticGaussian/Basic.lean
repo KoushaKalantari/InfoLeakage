@@ -23,8 +23,9 @@ Corollary 2.13) and the classical calibration of C. Dwork and A. Roth, *The Algo
 Foundations of Differential Privacy*, 2014 (Theorem A.1 = Theorem 3.22).
 
 With `Φ = cdf (gaussianReal 0 1)` the standard normal CDF, the central quantity is
-`gaussianDelta μ ε = Φ(μ / 2 - ε / μ) - e^ε Φ(-μ / 2 - ε / μ)`. For `M S = N(q S, σ²)` and a
-query `q` of global sensitivity `Δ`, the privacy profile of `M` is exactly
+`gaussianDelta μ ε = Φ(μ / 2 - ε / μ) - e^ε Φ(-μ / 2 - ε / μ)`, used for `μ > 0`. For
+`M S = N(q S, σ²)` and a query `q` of positive global sensitivity `Δ > 0`, the privacy profile of
+`M` is exactly
 `gaussianDelta (Δ / σ) ε = Φ(Δ / (2σ) - ε σ / Δ) - e^ε Φ(-Δ / (2σ) - ε σ / Δ)` (equation (6)), so
 `M` is `(ε, δ)`-DP iff this is at most `δ` (Theorem 8).
 
@@ -34,14 +35,17 @@ hockey-stick divergence and privacy profile are `hockeyStickDiv` and `privacyPro
 `InfoLeakage.Amplification.HockeyStick`. Only **scalar** queries (`d = 1`) are treated: the
 paper's `ℝ^d`-valued mechanism with `ℓ₂` sensitivity is not formalized. The global sensitivity
 `Δ = sup_{S ≃ S'} |q S - q S'|` is expressed as `IsLUB {d | ∃ S S', Adj S S' ∧ |q S - q S'| = d} Δ`
-(it need not be attained); sufficiency results only need `Δ` to be an upper bound. Unless stated
-otherwise results hold for all real `ε` and `δ` (the papers take `ε ≥ 0`, `δ ∈ [0, 1]`).
+(it need not be attained); sufficiency results only need `Δ` to be an upper bound. All results
+assume `Δ > 0`; zero sensitivity is excluded, since at `μ = 0` Lean's convention `x / 0 = 0`
+makes `gaussianDelta 0 ε = (1 - e^ε) / 2`, whereas the profile of a constant query is
+`max 0 (1 - e^ε)`. Unless stated otherwise results hold for all real `ε` and `δ` (the papers
+take `ε ≥ 0`, `δ ∈ [0, 1]`).
 
 ## Main definitions
 
-* `gaussianDelta μ ε`: `Φ(μ / 2 - ε / μ) - e^ε Φ(-μ / 2 - ε / μ)`, the privacy profile of the
-  Gaussian mechanism with `μ = Δ / σ` (left-hand side of equation (6) of Balle–Wang, `δ(ε)` of
-  Corollary 2.13 of Dong–Roth–Su).
+* `gaussianDelta μ ε`: `Φ(μ / 2 - ε / μ) - e^ε Φ(-μ / 2 - ε / μ)`, for `μ > 0` the privacy
+  profile of the Gaussian mechanism with `μ = Δ / σ`, `Δ > 0` (left-hand side of equation (6) of
+  Balle–Wang, `δ(ε)` of Corollary 2.13 of Dong–Roth–Su).
 
 ## Main statements (paper result → Lean name)
 
@@ -868,13 +872,14 @@ lemma AnalyticGaussian.gaussianDelta_three_halves_one_le : gaussianDelta (3 / 2)
 
 /-- **Theorem 4 of Balle–Wang, as printed (arXiv v2), is false.** Its hypotheses are `ε > 0` and
 `0 < δ < 1 / 2 - e^{-3ε} / √(4πε)`, and its conclusion for an `(ε, δ)`-DP Gaussian mechanism is
-`σ ≥ Δ / √(2ε)`. Counterexample (datasets `ℝ`, `q = id`, the single neighbouring pair `(1, 0)`,
-so `Δ = 1`): `ε = 1`, `δ = 0.47 < 1 / 2 - e^{-3} / √(4π) ≈ 0.486` and `σ = 2 / 3 < 1 / √2`; the
-mechanism is `(1, 0.47)`-DP since `δ(3 / 2, 1) ≈ 0.320 ≤ 0.47`
+`σ ≥ Δ / √(2ε)`; the paper assumes a symmetric neighbouring relation, and so does the negated
+statement (`Std.Symm Adj`). Counterexample (datasets `ℝ`, `q = id`, the symmetric neighbouring
+relation `{(1, 0), (0, 1)}`, so `Δ = 1`): `ε = 1`, `δ = 0.47 < 1 / 2 - e^{-3} / √(4π) ≈ 0.486`
+and `σ = 2 / 3 < 1 / √2`; the mechanism is `(1, 0.47)`-DP since `δ(3 / 2, 1) ≈ 0.320 ≤ 0.47`
 (`AnalyticGaussian.gaussianDelta_three_halves_one_le`, a certified bound). -/
 theorem not_forall_div_sqrt_le_of_isEpsDeltaDP_gaussianReal :
     ¬ ∀ (q : ℝ → ℝ) (Adj : ℝ → ℝ → Prop) (v : ℝ≥0) (M : Kernel ℝ ℝ) (ε δ Δ : ℝ),
-      IsLUB {d | ∃ S S', Adj S S' ∧ |q S - q S'| = d} Δ → 0 < Δ → v ≠ 0 →
+      Std.Symm Adj → IsLUB {d | ∃ S S', Adj S S' ∧ |q S - q S'| = d} Δ → 0 < Δ → v ≠ 0 →
       (∀ S, M S = gaussianReal (q S) v) → 0 < ε → 0 < δ →
       δ < 1 / 2 - exp (-3 * ε) / √(4 * π * ε) → IsEpsDeltaDP M Adj ε δ →
       Δ / √(2 * ε) ≤ √(v : ℝ) := by
@@ -883,11 +888,14 @@ theorem not_forall_div_sqrt_le_of_isEpsDeltaDP_gaussianReal :
     rw [NNReal.coe_div, show (((4 : ℝ≥0) : ℝ) / ((9 : ℝ≥0) : ℝ)) = (2 / 3) ^ 2 by norm_num,
       sqrt_sq (by norm_num)]
   have hv : (4 / 9 : ℝ≥0) ≠ 0 := by positivity
-  have hset : {d | ∃ S S' : ℝ, (S = 1 ∧ S' = 0) ∧ |id S - id S'| = d} = {1} := by
+  set Adj : ℝ → ℝ → Prop := fun S S' ↦ (S = 1 ∧ S' = 0) ∨ (S = 0 ∧ S' = 1)
+  have hsymm : Std.Symm Adj := ⟨fun _ _ h ↦ h.symm.imp (fun h ↦ h.symm) fun h ↦ h.symm⟩
+  have hset : {d | ∃ S S' : ℝ, Adj S S' ∧ |id S - id S'| = d} = {1} := by
     ext d
     constructor
-    · rintro ⟨S, S', ⟨rfl, rfl⟩, rfl⟩; norm_num
-    · rintro rfl; exact ⟨1, 0, ⟨rfl, rfl⟩, by norm_num⟩
+    · rintro ⟨S, S', h, rfl⟩
+      rcases h with ⟨h₁, h₂⟩ | ⟨h₁, h₂⟩ <;> simp [h₁, h₂]
+    · rintro rfl; exact ⟨1, 0, Or.inl ⟨rfl, rfl⟩, by norm_num⟩
   have hpaper : (47 / 100 : ℝ) < 1 / 2 - exp (-3 * 1) / √(4 * π * 1) := by
     rw [mul_one, mul_one]
     have h3 : 20 ≤ exp 3 := by
@@ -902,14 +910,13 @@ theorem not_forall_div_sqrt_le_of_isEpsDeltaDP_gaussianReal :
       rw [div_le_iff₀ (by positivity)]
       linarith
     linarith
-  have hDP : IsEpsDeltaDP (ZCDP.gaussianKernel id measurable_id (4 / 9)) (fun S S' ↦ S = 1 ∧ S' = 0)
-      1 (47 / 100) := by
+  have hDP : IsEpsDeltaDP (ZCDP.gaussianKernel id measurable_id (4 / 9)) Adj 1 (47 / 100) := by
     refine isEpsDeltaDP_of_gaussianReal (Δ := 1) ?_ one_pos hv (fun _ ↦ rfl) ?_
-    · rintro S S' ⟨rfl, rfl⟩; norm_num
+    · rintro S S' (⟨h₁, h₂⟩ | ⟨h₁, h₂⟩) <;> simp [h₁, h₂]
     · rw [hσ, show (1 : ℝ) / (2 / 3) = 3 / 2 by norm_num]
       exact AnalyticGaussian.gaussianDelta_three_halves_one_le
-  have key := H id _ (4 / 9) _ 1 (47 / 100) 1 (hset ▸ isLUB_singleton) one_pos hv (fun _ ↦ rfl)
-    one_pos (by norm_num) hpaper hDP
+  have key := H id Adj (4 / 9) _ 1 (47 / 100) 1 hsymm (hset ▸ isLUB_singleton) one_pos hv
+    (fun _ ↦ rfl) one_pos (by norm_num) hpaper hDP
   rw [hσ, mul_one, div_le_iff₀ (by positivity)] at key
   have : √2 < 3 / 2 := (sqrt_lt' (by norm_num)).2 (by norm_num)
   linarith

@@ -15,8 +15,10 @@ Under the identity gain function `g_id(w, x) = [w = x]`, the g-vulnerabilities o
 `InfoLeakage.QIF.GainFunctions` are the vulnerabilities of `InfoLeakage.QIF.MinEntropy`, so
 `g_id`-leakage is the min-entropy leakage of Smith (Proposition 3.1 of Alvim, Chatzikokolakis,
 Palamidessi and Smith, *Measuring Information Leakage using Generalized Gain Functions*,
-CSF 2012), and `g_id`-capacity is the min-capacity, the sum of the column maxima of the channel
-matrix (Theorem 2.1 of the same paper, which is Proposition 5.1 of Braun, Chatzikokolakis and
+CSF 2012), and `g_id`-capacity is the min-capacity: the multiplicative form `gCapacityRatio gId`
+(the exponential of the min-capacity) is the sum of the column maxima of the channel matrix, so
+the logarithmic `g_id`-capacity `gCapacity gId = log ∑_y max_x C[x, y]` is the min-capacity
+(Theorem 2.1 of the same paper, which is Proposition 5.1 of Braun, Chatzikokolakis and
 Palamidessi, MFPS 2009).
 
 ## Main statements
@@ -24,8 +26,9 @@ Palamidessi, MFPS 2009).
 * `gVulnerability_gId_eq_vulnerability`, `postGVulnerability_gId_eq_postVulnerability`:
   Proposition 3.1 of Alvim et al. (CSF 2012), prior and posterior.
 * `gLeakageRatio_gId`, `gLeakage_gId`: `g_id`-leakage is min-entropy leakage.
-* `gCapacityRatio_gId`, `gCapacityRatio_gId_eq_sum_iSup`: `g_id`-capacity is min-capacity
-  (Theorem 2.1 of Alvim et al., CSF 2012).
+* `gCapacityRatio_gId`, `gCapacityRatio_gId_eq_sum_iSup`: the multiplicative `g_id`-capacity is
+  the exponential of the min-capacity, `∑_y max_x C[x, y]` (Theorem 2.1 of Alvim et al.,
+  CSF 2012).
 -/
 
 @[expose] public section
@@ -60,12 +63,15 @@ theorem gLeakage_gId [MeasurableSingletonClass α] [MeasurableSingletonClass β]
     gLeakage gId μ κ = minEntropyLeakage μ κ := by
   rw [gLeakage, gLeakageRatio_gId, minEntropyLeakage_eq_log_multLeakage]
 
-/-- The `g_id`-capacity is the worst-case multiplicative leakage `ML×` of Braun et al. -/
+/-- The multiplicative `g_id`-capacity is the worst-case multiplicative leakage `ML×` of Braun
+et al. -/
 theorem gCapacityRatio_gId : gCapacityRatio gId κ = maxMultLeakage κ := by
   simp_rw [gCapacityRatio, gLeakageRatio_gId, maxMultLeakage]
 
-/-- **Theorem 2.1 of Alvim et al. (CSF 2012)**: the `g_id`-capacity, i.e. the min-capacity, is the
-sum of the column maxima of the channel matrix. -/
+/-- **Theorem 2.1 of Alvim et al. (CSF 2012)**, multiplicative form: the multiplicative
+`g_id`-capacity `gCapacityRatio gId κ`, the exponential of the min-capacity, is the sum of the
+column maxima of the channel matrix. The min-capacity itself is its logarithm,
+`gCapacity gId κ = log ∑_y max_x C[x, y]`. -/
 theorem gCapacityRatio_gId_eq_sum_iSup [MeasurableSingletonClass α] [Nonempty α] :
     gCapacityRatio gId κ = ∑ y, ⨆ x, κ x {y} :=
   gCapacityRatio_gId.trans maxMultLeakage_eq.1

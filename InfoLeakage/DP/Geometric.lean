@@ -55,9 +55,14 @@ datasets.
 ## Remark on the range of `α`
 
 The paper states its results for every privacy level `α ∈ [0, 1]` and sets aside `α = 0, 1` as
-degenerate cases at the start of Section 5 (arXiv v3). At `α = 1` the formula of Example 2.1 is
-identically `0`, so there is no `1`-geometric mechanism to formalize, and at `α = 0` the mechanism
-releases `f(x)` exactly (privacy level `-ln 0 = ∞`). We therefore assume `0 ≤ α < 1` for the
+degenerate cases at the start of Section 5 (arXiv v3). At `α = 1` the displayed untruncated mass
+formula `(1 - α) / (1 + α) · α^{|z|}` of Example 2.1 is identically `0`, so this formula gives no
+`1`-geometric mechanism to formalize (perfect privacy, `α = 1`, is achieved by data-independent
+mechanisms, which are not geometric mechanisms of this form). At `α = 0` the mechanism releases
+`f(x)` exactly; the additive privacy level `-log α` tends to `+∞` as `α ↓ 0`, and exact release
+has no finite privacy bound when neighbouring answers differ. (In Lean, `Real.log 0 = 0`, so the
+formula `-log α` must not be evaluated at `α = 0`.) This is a degenerate boundary convention, not
+an error in the paper's privacy or optimality results. We therefore assume `0 ≤ α < 1` for the
 distribution and `0 < α < 1` for the privacy statement.
 -/
 

@@ -17,10 +17,16 @@ public import Statlib.Divergence.TotalVariation
 
 For a divergence function `f`, the **f-information** between an input `X ∼ μ` and the output `Y`
 of a channel `κ` is `I_f(X; Y) = D_f(P_{XY} ‖ P_X ⊗ P_Y)`, where `P_{XY} = μ ⊗ₘ κ` and
-`P_X ⊗ P_Y = μ × (κ ∘ₘ μ)`. It was introduced by I. Csiszár, *A class of measures of
-informativity of observation channels*, Period. Math. Hungar. 2 (1972), and is equation (7.46) of
-Y. Polyanskiy and Y. Wu, *Information Theory: From Coding to Learning*, Cambridge University Press
-(2024), Section 7.8. For the Kullback–Leibler divergence it is the mutual information.
+`P_X ⊗ P_Y = μ × (κ ∘ₘ μ)`. This is equation (7.46) of Y. Polyanskiy and Y. Wu, *Information
+Theory: From Coding to Learning*, Cambridge University Press (2024), Section 7.8. For the
+Kullback–Leibler divergence it is the mutual information.
+
+It should be distinguished from the f-informativity of I. Csiszár, *A class of measures of
+informativity of observation channels*, Period. Math. Hungar. 2 (1972), Definition 2.3, (2.9): the
+infimum `inf_Q ∑_x P_X(x) D_f(P_{Y|x} ‖ Q)` over output laws `Q`, while
+`D_f(P_{XY} ‖ P_X ⊗ P_Y) = ∑_x P_X(x) D_f(P_{Y|x} ‖ P_Y)` is its value at `Q = P_Y`, an upper
+bound on it. The two differ in general; for the Kullback–Leibler divergence the infimum is attained
+at `Q = P_Y` and both are `I(X; Y)`. Csiszár's optimized quantity is not formalized here.
 
 We give two versions. `fMutualInfo f ρ` is defined for an arbitrary joint law `ρ` on `α × β`, as
 `D_f(ρ ‖ ρ.fst × ρ.snd)`, and covers (7.46) in full generality. `fInfo f μ κ` is parametrized, as
@@ -37,8 +43,10 @@ function, and logarithms are natural. Polyanskiy–Wu's real-valued `f` fits thi
 adding a linear term `c (x - 1)` that makes it nonnegative; by their Proposition 7.2(6) this does
 not change `D_f` between probability measures (it can change it between finite measures of
 different masses). In particular the Kullback–Leibler divergence uses
-`klDivFun x = x log x + 1 - x` rather than their `x log x`; all the joint laws and products of
-marginals compared here are probability measures in the main statements.
+`klDivFun x = x log x + 1 - x` rather than their `x log x`. Several statements below assume only
+finite input laws or finite kernels; they are statements about Statlib's `fDiv`, and they are
+Polyanskiy–Wu's statements (with their real-valued `f`) when the two measures compared are
+probability measures, e.g. for a probability input law `μ` and a Markov kernel `κ`.
 
 Mathlib's `etvDist` (total variation norm) is twice Polyanskiy–Wu's `TV`, so `tvInfo μ κ` is twice
 their `I_TV(X; Y) = TV(P_{XY}, P_X P_Y)`; and Statlib's `sqHellinger` is half of their `H²` (7.5),
@@ -63,9 +71,11 @@ so `sqHellingerInfo μ κ` is half of the f-information (7.46) for their `H²`.
   with the special cases `tvInfo_comp_le`, `chiSqInfo_comp_le`, `sqHellingerInfo_comp_le`; for
   joint laws, processing either component: `fMutualInfo_parallelComp_comp_le`.
 * Independence gives `I_f = 0` (Polyanskiy–Wu, Section 7.8, and Theorem 7.5(a) and Ex. I.40 for
-  the converse): `fMutualInfo_eq_zero_of_eq_prod`, `fInfo_eq_zero_of_compProd_eq_prod`,
-  `fInfo_const`; the converse for a divergence function strictly convex on a neighbourhood of `1`
-  (stronger than Polyanskiy–Wu's strict convexity at `1`): `fMutualInfo_eq_zero_iff`,
+  the converse): `fMutualInfo_eq_zero_of_eq_prod`, `fInfo_eq_zero_of_compProd_eq_prod`, and for
+  the output of a constant channel with a probability output law, `fMutualInfo_compProd_const`
+  (from the finite-kernel identity `fInfo_const`); the converse for a divergence function
+  strictly convex on a neighbourhood of `1` (stronger than Polyanskiy–Wu's strict convexity at
+  `1`): `fMutualInfo_eq_zero_iff`,
   `fInfo_eq_zero_iff`; for the total variation and the mutual information, which are not covered
   by that hypothesis or are covered separately: `tvInfo_eq_zero_iff`,
   `mutualInfo_compProd_eq_zero_iff`.
@@ -83,7 +93,7 @@ so `sqHellingerInfo μ κ` is half of the f-information (7.46) for their `H²`.
 ## References
 
 * I. Csiszár, *A class of measures of informativity of observation channels*, Period. Math.
-  Hungar. 2 (1972), 191–213.
+  Hungar. 2 (1972), 191–213 (the related, optimized f-informativity; see above).
 * Y. Polyanskiy, Y. Wu, *Information Theory: From Coding to Learning*, Cambridge University Press
   (2024), Section 7.8; draft at https://people.lids.mit.edu/yp/homepage/data/itbook-export.pdf.
 -/
@@ -106,7 +116,7 @@ section Joint
 variable {ρ : Measure (α × β)}
 
 /-- The **f-information** `I_f(X; Y) = D_f(P_{XY} ‖ P_X ⊗ P_Y)` of a joint law `ρ = P_{XY}` on
-`α × β` (Csiszár 1972; Polyanskiy–Wu, (7.46)): the f-divergence between `ρ` and the product
+`α × β` (Polyanskiy–Wu, (7.46)): the f-divergence between `ρ` and the product
 `ρ.fst × ρ.snd` of its marginals. Here `f` is an `ℝ≥0∞`-valued `DivFunction`; a real-valued
 convex `f` of Polyanskiy–Wu is represented after adding a linear term, which does not change the
 divergence between probability measures (their Proposition 7.2(6)). -/
@@ -147,7 +157,7 @@ end Joint
 /-! ### f-information of an input law and a channel -/
 
 /-- The **f-information** `I_f(X; Y) = D_f(P_{XY} ‖ P_X ⊗ P_Y)` between an input `X ∼ μ` and the
-output `Y` of the channel `κ` (Csiszár 1972; Polyanskiy–Wu, (7.46)): the f-divergence between the
+output `Y` of the channel `κ` (Polyanskiy–Wu, (7.46)): the f-divergence between the
 joint law `μ ⊗ₘ κ` and `μ × (κ ∘ₘ μ)`, which for a Markov kernel `κ` is the product of the
 marginals of `μ ⊗ₘ κ` (`fMutualInfo_compProd`). As for `fMutualInfo`, `f` is an `ℝ≥0∞`-valued
 `DivFunction`, which represents a real-valued `f` of Polyanskiy–Wu up to a linear term. -/
@@ -185,10 +195,22 @@ theorem fInfo_eq_zero_of_compProd_eq_prod [IsFiniteMeasure μ] [IsMarkovKernel �
     fInfo f μ κ = 0 := by
   rw [fInfo, ← h, fDiv_self]
 
-/-- The output of a constant channel is independent of the input, hence `I_f(X; Y) = 0`. -/
+/-- For a constant kernel `Kernel.const α ξ` with `ξ` a finite measure, `fInfo f μ κ = 0`: the
+identity `μ ⊗ₘ κ = μ.prod (κ ∘ₘ μ)` holds. This is an identity about the two measures compared by
+`fInfo`; unless `ξ` is a probability measure, the kernel is not Markov and `μ.prod (κ ∘ₘ μ)` need
+not be the product of the marginals of `μ ⊗ₘ κ` (for `ξ = 2 • δ_y` the joint law has mass `2` and
+the product of its marginals mass `4`). For the independence statement see
+`fMutualInfo_compProd_const`. -/
 theorem fInfo_const [IsProbabilityMeasure μ] (ξ : Measure β) [IsFiniteMeasure ξ] :
     fInfo f μ (Kernel.const α ξ) = 0 := by
   rw [fInfo, Measure.compProd_const, Measure.const_comp, measure_univ, one_smul, fDiv_self]
+
+/-- The output `Y ∼ ξ` of a constant channel is independent of the input, hence the f-information
+of the joint law vanishes: `I_f(X; Y) = 0`. -/
+theorem fMutualInfo_compProd_const [IsProbabilityMeasure μ] (ξ : Measure β)
+    [IsProbabilityMeasure ξ] :
+    fMutualInfo f (μ ⊗ₘ Kernel.const α ξ) = 0 := by
+  rw [fMutualInfo_compProd, fInfo_const]
 
 /-- For a divergence function `f` that is strictly convex on an open interval around `1`, the
 f-information vanishes if and only if the input and the output are independent, that is

@@ -609,7 +609,11 @@ open BoundedRange
 the change of score `u(x, r) - u(x', r)` varies by at most `D` over the outputs `r`, then the
 exponential mechanism `exponentialMechanism u ε Δ` (output `r` with probability proportional to
 `exp (ε u(x, r) / (2Δ))`) is `(ε D / (2Δ))`-BR. The normalizing constants cancel in the
-bounded-range ratio, which is the computation in the proof of Lemma 4.3 of Durfee–Rogers. -/
+bounded-range ratio, which is the computation in the proof of Lemma 4.3 of Durfee–Rogers.
+This helper does not assume `[Nonempty R]`, a convention-dependent extension: for empty `R` the
+kernel is zero and the statement holds vacuously. The paper-facing corollaries below assume
+`[Nonempty R]`, so that the kernel is a randomized mechanism
+(`isMarkovKernel_exponentialMechanism`). -/
 theorem isBoundedRange_exponentialMechanism_of_range (hu : ∀ r, Measurable fun x ↦ u x r)
     (hε : 0 ≤ ε) (hΔ : 0 < Δ)
     (hD : ∀ ⦃x x'⦄, Adj x x' → ∀ r r', (u x r - u x' r) - (u x r' - u x' r') ≤ D) :
@@ -637,9 +641,13 @@ theorem isBoundedRange_exponentialMechanism_of_range (hu : ∀ r, Measurable fun
 has sensitivity at most `Δ > 0` (`|u(x, r) - u(x', r)| ≤ Δ` for neighbours `x, x'`), then the
 exponential mechanism `exponentialMechanism u ε Δ`, which outputs `r` with probability
 proportional to `exp (ε u(x, r) / (2Δ))`, is `ε`-BR. (Durfee–Rogers's mechanism `EM_q` with
-parameter `ε` uses `exp (ε u(x, r) / Δ)`, which is the present one with `2ε`, and is `2ε`-BR.) -/
-theorem isBoundedRange_exponentialMechanism (hu : ∀ r, Measurable fun x ↦ u x r)
-    (hε : 0 ≤ ε) (hΔ : 0 < Δ) (hΔu : ∀ ⦃x x'⦄, Adj x x' → ∀ r, |u x r - u x' r| ≤ Δ) :
+parameter `ε` uses `exp (ε u(x, r) / Δ)`, which is the present one with `2ε`, and is `2ε`-BR.)
+The range `R` is nonempty, so that the kernel is a randomized mechanism; the proof does not use
+`[Nonempty R]` (see `isBoundedRange_exponentialMechanism_of_range`). -/
+@[nolint unusedArguments]
+theorem isBoundedRange_exponentialMechanism [Nonempty R]
+    (hu : ∀ r, Measurable fun x ↦ u x r) (hε : 0 ≤ ε) (hΔ : 0 < Δ)
+    (hΔu : ∀ ⦃x x'⦄, Adj x x' → ∀ r, |u x r - u x' r| ≤ Δ) :
     IsBoundedRange (exponentialMechanism u ε Δ) Adj ε := by
   have hD : ∀ ⦃x x'⦄, Adj x x' → ∀ r r', (u x r - u x' r) - (u x r' - u x' r') ≤ 2 * Δ := by
     intro x x' hx r r'
@@ -650,9 +658,12 @@ theorem isBoundedRange_exponentialMechanism (hu : ∀ r, Measurable fun x ↦ u 
 /-- **Durfee–Rogers, Lemma 4.3** (second part, monotonic scores), in the normalization of
 Dwork–Roth: if the score has sensitivity at most `Δ > 0` and is monotonic in the dataset (for
 neighbours `x, x'`, either `u(x, r) ≤ u(x', r)` for all `r` or `u(x', r) ≤ u(x, r)` for all `r`),
-then `exponentialMechanism u ε Δ` is `(ε / 2)`-BR. -/
-theorem isBoundedRange_exponentialMechanism_of_monotone (hu : ∀ r, Measurable fun x ↦ u x r)
-    (hε : 0 ≤ ε) (hΔ : 0 < Δ) (hΔu : ∀ ⦃x x'⦄, Adj x x' → ∀ r, |u x r - u x' r| ≤ Δ)
+then `exponentialMechanism u ε Δ` is `(ε / 2)`-BR. The range `R` is nonempty, so that the kernel
+is a randomized mechanism; the proof does not use `[Nonempty R]`. -/
+@[nolint unusedArguments]
+theorem isBoundedRange_exponentialMechanism_of_monotone [Nonempty R]
+    (hu : ∀ r, Measurable fun x ↦ u x r) (hε : 0 ≤ ε) (hΔ : 0 < Δ)
+    (hΔu : ∀ ⦃x x'⦄, Adj x x' → ∀ r, |u x r - u x' r| ≤ Δ)
     (hmono : ∀ ⦃x x'⦄, Adj x x' → (∀ r, u x r ≤ u x' r) ∨ (∀ r, u x' r ≤ u x r)) :
     IsBoundedRange (exponentialMechanism u ε Δ) Adj (ε / 2) := by
   have hD : ∀ ⦃x x'⦄, Adj x x' → ∀ r r', (u x r - u x' r) - (u x r' - u x' r') ≤ Δ := by
@@ -668,9 +679,11 @@ theorem isBoundedRange_exponentialMechanism_of_monotone (hu : ∀ r, Measurable 
 `(u(x, r) - u(x', r)) - (u(x, r') - u(x', r')) ≤ Δ̃` for all neighbours `x, x'` and all `r, r'`,
 then the mechanism that outputs `r` with probability proportional to `exp (ε u(x, r) / Δ̃)`,
 which is `exponentialMechanism u ε (Δ̃ / 2)` (`BoundedRange.exponentialMechanismProb_half`), is
-`ε`-BR. -/
-theorem isBoundedRange_exponentialMechanism_range (hu : ∀ r, Measurable fun x ↦ u x r)
-    (hε : 0 ≤ ε) (hΔ : 0 < Δ)
+`ε`-BR. The range `R` is nonempty, so that the kernel is a randomized mechanism; the proof does
+not use `[Nonempty R]`. -/
+@[nolint unusedArguments]
+theorem isBoundedRange_exponentialMechanism_range [Nonempty R]
+    (hu : ∀ r, Measurable fun x ↦ u x r) (hε : 0 ≤ ε) (hΔ : 0 < Δ)
     (hrange : ∀ ⦃x x'⦄, Adj x x' → ∀ r r', (u x r - u x' r) - (u x r' - u x' r') ≤ Δ) :
     IsBoundedRange (exponentialMechanism u ε (Δ / 2)) Adj ε := by
   have h := isBoundedRange_exponentialMechanism_of_range hu hε (half_pos hΔ) hrange

@@ -266,11 +266,16 @@ theorem laplace_dilation {ε δ s : ℝ} (hε : ε ≤ 1) (hδ₀ : 0 < δ) (hδ
             exact setLIntegral_le_lintegral _ _
     exact measureReal_le_of_le (exp_pos _).le (by positivity) h
 
-/-- **Nissim–Raskhodnikova–Smith, Lemma 2.9**, case `d = 1`: for `ε ≤ 1` and `δ ∈ (0, 1)`, the
-standard Laplace distribution `Lap(1)` is `(α, β)`-admissible for `(ε, δ)` with `α = ε/2` and
-`β = ε / (2 ln (2/δ))`. (The paper assumes `ε, δ ∈ (0, 1)`.) -/
-theorem isAdmissibleNoise_laplace {ε δ : ℝ} (hε : ε ≤ 1) (hδ₀ : 0 < δ) (hδ₁ : δ < 1) :
+/-- **Nissim–Raskhodnikova–Smith, Lemma 2.9**, case `d = 1`: for `ε ∈ (0, 1]` and `δ ∈ (0, 1)`,
+the standard Laplace distribution `Lap(1)` is `(α, β)`-admissible for `(ε, δ)` with `α = ε/2` and
+`β = ε / (2 ln (2/δ))`. (The paper assumes `ε, δ ∈ (0, 1)`.) The hypothesis `0 < ε` is the
+paper's setting and is not used in the proof: for `ε < 0` both radii are negative and the
+sliding and dilation conditions are vacuous, so it only excludes such degenerate instances. -/
+@[nolint unusedArguments]
+theorem isAdmissibleNoise_laplace {ε δ : ℝ} (_hε₀ : 0 < ε) (hε : ε ≤ 1) (hδ₀ : 0 < δ)
+    (hδ₁ : δ < 1) :
     IsAdmissibleNoise (laplaceMeasure 0 1) (ε / 2) (ε / (2 * log (2 / δ))) ε δ where
+  isProbabilityMeasure := isProbabilityMeasure_laplaceMeasure 0 one_pos
   sliding Δ hΔ E hE :=
     calc _ ≤ exp |Δ| * _ := laplace_sliding Δ hE
       _ ≤ exp (ε / 2) * (laplaceMeasure 0 1).real ((· - Δ) ⁻¹' E) := by gcongr

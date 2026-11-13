@@ -61,9 +61,10 @@ coordinates equal to `0`, `3` and `2`.
 * Section 6.1 (p. 17): the product formula is printed as
   `P(X^{1,b} = x₁, …, X^{k,b} = x_k) = ∏_{x=1}^k P̃_b(x_i)`; the product index should be `i`.
 * Section 6.1: `E` is defined (p. 16) as a set of exponents `ε̃`, but the composed set is listed
-  (p. 17)
-  as `{e^{(k-2⌊k/2⌋)ε}, …, e^{kε}}`; it should read `{(k - 2⌊k/2⌋) ε, …, k ε}`. Neither slip
-  affects the stated results.
+  (p. 17) as `{e^{(k-2⌊k/2⌋)ε}, …, e^{kε}}`; the exponentials should be removed, giving
+  `{(k - 2⌊k/2⌋) ε, …, k ε}`. (Identifying this corrected set with the literal `E` of p. 16
+  further requires excluding the outcomes where both composed distributions vanish, and treating
+  `δ = 1` separately.) Neither slip affects the stated results.
 * After Theorem 3.3 (p. 7): "the privacy region of `k`-fold composition is an intersection of
   `k` regions"; the intersection is over `i ∈ {0, …, ⌊k/2⌋}`, i.e. of `⌊k/2⌋ + 1` regions.
 * Section 6.1 (p. 17): "the privacy region is `R({εᵢ, δᵢ})` … where … `δᵢ`'s are defined as in
@@ -143,10 +144,13 @@ theorem isEpsDeltaDP_piKernel_hockeyStickDiv {𝒟 : Type*} [MeasurableSpace �
 end Domination
 
 /-- **Achievability in the optimal composition theorem** (Section 6.1 of Kairouz–Oh–Viswanath):
-the `k`-fold composition of the canonical mechanism, which is itself `(ε, δ)`-DP
-(`isEpsDeltaDP_canonicalMechanism`), is not `(ε', δ')`-DP for any
+the `k`-fold composition of the canonical mechanism is not `(ε', δ')`-DP for any
 `δ' < D_{e^ε'}(P̃₀^k ‖ P̃₁^k)`. The hypothesis that `canonicalMechanism ε δ` is a Markov kernel
-holds exactly when `δ ∈ [0, 1]` (`isMarkovKernel_canonicalMechanism`). -/
+holds exactly when `δ ∈ [0, 1]` (`isMarkovKernel_canonicalMechanism`). This statement does not
+assume `ε ≥ 0`; when `ε ≥ 0` (and `δ ∈ [0, 1]`) the canonical mechanism is itself `(ε, δ)`-DP
+(`isEpsDeltaDP_canonicalMechanism`), which is what makes it a witness of optimality. Without
+`ε ≥ 0` it need not be: for `ε = -1`, `δ = 0` it is Markov but fails `(ε, δ)`-DP on the whole
+space. -/
 theorem not_isEpsDeltaDP_piKernel_canonicalMechanism [IsMarkovKernel (canonicalMechanism ε δ)]
     {ε' δ' : ℝ} (hδ' : δ' < hockeyStickDiv (exp ε')
       (Measure.pi fun _ : ι ↦ canonicalMechanism ε δ false)
@@ -198,9 +202,10 @@ Kairouz–Oh–Viswanath, the display before Section 6.2): for `k = |ι|`, `ε �
 `i ≤ k`,
 `d_{(k-2i)ε}(P̃₀^k, P̃₁^k) = 1 - (1 - δ)^k + (1 - δ)^k δ_i = 1 - (1 - δ)^k (1 - δ_i)`.
 The paper uses `i ≤ ⌊k/2⌋`, as do the theorems below. The identity is proved for all `i ≤ k`,
-but for `2i > k` the slope `e^{(k-2i)ε} < 1` lies outside the paper's range and, by the
-(unformalized) identity `D_γ(P ‖ Q) = 1 - γ + γ D_{1/γ}(Q ‖ P)`, the case `i` carries the same
-information as the case `k - i`; it is not a strengthening. -/
+but for `2i > k` and `ε > 0` the slope `e^{(k-2i)ε} < 1` lies outside the paper's range (at
+`ε = 0` every slope equals `1`) and, by the (unformalized) identity
+`D_γ(P ‖ Q) = 1 - γ + γ D_{1/γ}(Q ‖ P)`, the case `i` carries the same information as the case
+`k - i`; it is not a strengthening. -/
 theorem hockeyStickDiv_pi_canonicalMechanism (hε : 0 ≤ ε) (hδ₀ : 0 ≤ δ) (hδ₁ : δ ≤ 1) {i : ℕ}
     (hi : i ≤ Fintype.card ι) :
     hockeyStickDiv (exp ((Fintype.card ι - 2 * i) * ε))

@@ -33,9 +33,9 @@ as in `IsLocalDP` and `outputLaw`. The law of `Y` is `outputLaw pX R`.
 * `PrivacyBreach.priorProb pX Q`: the prior probability `P[Q(X)]`.
 * `PrivacyBreach.posteriorProb pX R Q y`: the posterior probability `P[Q(X) | Y = y]`.
 * `IsUpwardBreach pX R Q ρ₁ ρ₂ y`: a (straight or upward) `ρ₁`-to-`ρ₂` privacy breach with respect
-  to `Q`, caused by `y` (Definitions 1 and 2).
+  to `Q`, caused by `y` (Definitions 1 and 2, for `0 < ρ₁ < ρ₂ < 1` and a probability law).
 * `IsDownwardBreach pX R Q ρ₁ ρ₂ y`: an inverse or downward `ρ₂`-to-`ρ₁` privacy breach
-  (Definition 2).
+  (Definition 2, for `0 < ρ₁ < ρ₂ < 1` and a probability law).
 * `IsAmplifyingAt R γ y`, `IsAmplifying R γ`: `R` is at most `γ`-amplifying for `y`, and for every
   `y` (Definition 3).
 
@@ -55,9 +55,10 @@ as in `IsLocalDP` and `outputLaw`. The law of `Y` is `outputLaw pX R`.
 
 * Section 3, the law of `Y` and the posteriors: `outputLaw`, `PrivacyBreach.priorProb`,
   `PrivacyBreach.posteriorProb`.
-* Definition 1: `IsUpwardBreach` (Definition 1 is the upward case of Definition 2).
-* Definition 2: `IsUpwardBreach`, `IsDownwardBreach`; the reduction of downward breaches to upward
-  breaches of `¬Q`: `isDownwardBreach_iff_isUpwardBreach_not`.
+* Definition 1: `IsUpwardBreach` (Definition 1 is the upward case of Definition 2), under the
+  paper's restrictions `0 < ρ₁ < ρ₂ < 1` (see the implementation notes).
+* Definition 2: `IsUpwardBreach`, `IsDownwardBreach`, under the same restrictions; the reduction
+  of downward breaches to upward breaches of `¬Q`: `isDownwardBreach_iff_isUpwardBreach_not`.
 * Definition 3, eq. (2): `IsAmplifyingAt`, `IsAmplifying`.
 * Statement 1, eq. (3): `not_isUpwardBreach_of_isAmplifyingAt`,
   `not_isDownwardBreach_of_isAmplifyingAt`; their common core is
@@ -75,6 +76,12 @@ as in `IsLocalDP` and `outputLaw`. The law of `Y` is `outputLaw pX R`.
   `P[Y = y] > 0`; this positivity is part of `IsUpwardBreach` and `IsDownwardBreach`, so the
   posterior is never the junk value `x / 0 = 0`.
 * Properties are predicates `Q : α → Prop` with `[DecidablePred Q]`.
+* `IsUpwardBreach` and `IsDownwardBreach` are algebraic extensions of Definitions 1 and 2: they
+  are defined for all real thresholds `ρ₁, ρ₂` and all real vectors `pX` and matrices `R`, while
+  the paper's definitions presuppose `0 < ρ₁ < ρ₂ < 1` and valid probability laws. They are
+  Evfimievski–Gehrke–Srikant's breaches only under those restrictions; for instance with
+  `ρ₁ = ρ₂` an unchanged probability `P[Q(X)] = P[Q(X) | Y = y] = ρ₁` would count as a "breach".
+  Statement 1 and its corollaries assume `0 < ρ₁ < ρ₂ < 1`.
 
 ## Not formalized
 
@@ -116,15 +123,18 @@ end PrivacyBreach
 open PrivacyBreach
 
 /-- A **(straight or upward) `ρ₁`-to-`ρ₂` privacy breach** with respect to the property `Q`,
-caused by the value `y` (Definitions 1 and 2 of Evfimievski–Gehrke–Srikant):
-`P[Y = y] > 0`, `P[Q(X)] ≤ ρ₁` and `P[Q(X) | Y = y] ≥ ρ₂`. -/
+caused by the value `y`: `P[Y = y] > 0`, `P[Q(X)] ≤ ρ₁` and `P[Q(X) | Y = y] ≥ ρ₂`. This is
+Definitions 1 and 2 of Evfimievski–Gehrke–Srikant when `0 < ρ₁ < ρ₂ < 1` and `pX`, `R` are a
+probability vector and a stochastic matrix; for other arguments it is an algebraic extension (for
+instance with `ρ₁ = ρ₂` an unchanged probability can count as a "breach"). -/
 def IsUpwardBreach (pX : α → ℝ) (R : α → β → ℝ) (Q : α → Prop) [DecidablePred Q]
     (ρ₁ ρ₂ : ℝ) (y : β) : Prop :=
   0 < outputLaw pX R y ∧ priorProb pX Q ≤ ρ₁ ∧ ρ₂ ≤ posteriorProb pX R Q y
 
 /-- An **(inverse or downward) `ρ₂`-to-`ρ₁` privacy breach** with respect to the property `Q`,
-caused by the value `y` (Definition 2 of Evfimievski–Gehrke–Srikant): `P[Y = y] > 0`,
-`P[Q(X)] ≥ ρ₂` and `P[Q(X) | Y = y] ≤ ρ₁`. -/
+caused by the value `y`: `P[Y = y] > 0`, `P[Q(X)] ≥ ρ₂` and `P[Q(X) | Y = y] ≤ ρ₁`. This is
+Definition 2 of Evfimievski–Gehrke–Srikant when `0 < ρ₁ < ρ₂ < 1` and `pX`, `R` are a probability
+vector and a stochastic matrix; for other arguments it is an algebraic extension. -/
 def IsDownwardBreach (pX : α → ℝ) (R : α → β → ℝ) (Q : α → Prop) [DecidablePred Q]
     (ρ₁ ρ₂ : ℝ) (y : β) : Prop :=
   0 < outputLaw pX R y ∧ ρ₂ ≤ priorProb pX Q ∧ posteriorProb pX R Q y ≤ ρ₁

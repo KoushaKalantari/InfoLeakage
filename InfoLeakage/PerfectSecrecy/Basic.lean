@@ -81,14 +81,21 @@ Theorem 6 is only necessary under that exclusion; `isPerfectlySecret_iff` gives 
 condition for a fixed a priori law, and `isPerfectlySecret_iff_of_forall_ne_zero` the condition
 for a fixed a priori law charging every message.
 
-The definitions require countable alphabets with measurable singletons and probability measures
-for the key and a priori laws (`cipherKernel`, `IsPerfectlySecret`, `IsPerfectSystem`). Without
-them the definitions can hold for degenerate reasons: for a zero key law, or a cryptogram
-σ-algebra in which the events `{e}` are not measurable, every system would be "perfect".
+The secrecy predicates `IsPerfectlySecret` and `IsPerfectSystem` require countable alphabets
+with measurable singletons and probability measures for the key and a priori laws. Without them
+the definitions can hold for degenerate reasons: for a zero key law, or a cryptogram σ-algebra
+in which the events `{e}` are not measurable, every system would be "perfect". The auxiliary
+`cipherKernel T ν` requires the countability and measurability instances but accepts an
+arbitrary key measure `ν`; it is a Markov kernel whose values are Shannon's probabilities
+`P_M(E)` only when `ν` is a probability measure.
 
 The a posteriori probability `P_E(M)` is the elementary conditional probability
-`(μ ⊗ₘ cipherKernel T ν)[Prod.fst ⁻¹' {m} | Prod.snd ⁻¹' {e}]`, defined only for cryptograms of
-positive probability; `IsPerfectlySecret` quantifies over exactly those cryptograms.
+`(μ ⊗ₘ cipherKernel T ν)[Prod.fst ⁻¹' {m} | Prod.snd ⁻¹' {e}]`. Mathlib's `cond` is totalized: it
+is defined for every conditioning event, and is the zero measure when that event has measure `0`
+or `∞`. Accordingly `cond_eq_mul_div` is a totalized identity in `ℝ≥0∞` (for any s-finite `μ`,
+with `P(E)` allowed to be `0` or `∞`); it is Bayes' theorem only for a probability a priori law
+and `P(E) > 0`. The secrecy predicates enforce probability laws, and `IsPerfectlySecret`
+quantifies only over cryptograms of positive probability, i.e. it excludes null cryptograms.
 -/
 
 @[expose] public section
@@ -114,7 +121,11 @@ lemma compProd_apply_singleton_prod [SFinite μ] [IsSFiniteKernel κ] (m : M) (e
     lintegral_singleton, mul_comm]
 
 /-- **Bayes' theorem**: the conditional probability that the input of the kernel `κ` is `m`
-given that its output is `e` is `μ {m} * κ m {e} / (κ ∘ₘ μ) {e}`. -/
+given that its output is `e` is `μ {m} * κ m {e} / (κ ∘ₘ μ) {e}`.
+
+This is a totalized identity in `ℝ≥0∞`: `μ` need only be s-finite and `(κ ∘ₘ μ) {e}` may be `0`
+or `∞` (Mathlib's `cond` is then the zero measure). It is Bayes' theorem in the probabilistic
+sense when `μ` is a probability measure and `(κ ∘ₘ μ) {e} > 0`. -/
 lemma cond_eq_mul_div [SFinite μ] [IsMarkovKernel κ] (m : M) (e : E) :
     (μ ⊗ₘ κ)[Prod.fst ⁻¹' {m} | Prod.snd ⁻¹' {e}] = μ {m} * κ m {e} / (κ ∘ₘ μ) {e} := by
   have h_inter : Prod.snd ⁻¹' {e} ∩ Prod.fst ⁻¹' {m} = ({m} ×ˢ {e} : Set (M × E)) := by
@@ -163,7 +174,8 @@ the keys that encipher `m` into `e` (`cipherKernel_apply_singleton`).
 The instances `[Countable K] [MeasurableSingletonClass K]` (every map out of `K` is measurable,
 so the image law is not degenerate) and `[MeasurableSingletonClass E]` (the events `{e}` are
 measurable) are not used in the body; they restrict the definition to the setting in which it
-means `P_M(E)`. -/
+means `P_M(E)`. The key measure `ν` is arbitrary: `cipherKernel T ν` is a Markov kernel, and its
+values are probabilities, only when `ν` is a probability measure (the instance below). -/
 @[nolint unusedArguments]
 noncomputable def cipherKernel [Countable K] [MeasurableSingletonClass K]
     [MeasurableSingletonClass E] (T : K → M → E) (ν : Measure K) : Kernel M E :=

@@ -261,8 +261,10 @@ theorem IsPufferfish.convexComb (h₁ : IsPufferfish M₁ Spairs Θ ε) (h₂ : 
   obtain ⟨a₂, b₂⟩ := h₂ hp θ hθ hs hs'
   exact ⟨step a₁ a₂, step b₁ b₂⟩
 
-/-- The mechanism `M_p` of Axiom 5.2: run `M₁` with probability `p` and `M₂` with probability
-`1 - p`, i.e. `M_p(D) = p M₁(D) + (1 - p) M₂(D)`. -/
+/-- The kernel `D ↦ p M₁(D) + (1 - p) M₂(D)` (truncated subtraction in `ℝ≥0∞`). For `p ≤ 1` and
+Markov kernels `M₁`, `M₂` it is the mechanism `M_p` of Axiom 5.2, which runs `M₁` with
+probability `p` and `M₂` with probability `1 - p` (`Pufferfish.isMarkovKernel_mixKernel`); for
+other `p` it is only an algebraic extension. -/
 noncomputable def Pufferfish.mixKernel (p : ℝ≥0∞) (M₁ M₂ : Kernel 𝒟 Y) : Kernel 𝒟 Y where
   toFun D := p • M₁ D + (1 - p) • M₂ D
   measurable' := Measure.measurable_of_measurable_coe _ fun s hs ↦ by
@@ -277,8 +279,10 @@ lemma Pufferfish.isMarkovKernel_mixKernel {p : ℝ≥0∞} (hp : p ≤ 1) [IsMar
     [IsMarkovKernel M₂] : IsMarkovKernel (Pufferfish.mixKernel p M₁ M₂) :=
   ⟨fun D ↦ ⟨by simp [Pufferfish.mixKernel_apply, add_tsub_cancel_of_le hp]⟩⟩
 
-/-- **Convexity** (second half of Theorem 5.1 of Kifer–Machanavajjhala) for the mechanism `M_p`
-that runs `M₁` with probability `p` and `M₂` with probability `1 - p`. -/
+/-- **Convexity** (second half of Theorem 5.1 of Kifer–Machanavajjhala) for the mixture
+`Pufferfish.mixKernel p M₁ M₂`. For `p ≤ 1` and Markov `M₁`, `M₂` this is the mechanism `M_p`
+that runs `M₁` with probability `p` and `M₂` with probability `1 - p`; the statement for
+arbitrary `p : ℝ≥0∞` and arbitrary kernels is an algebraic extension. -/
 theorem IsPufferfish.mix (h₁ : IsPufferfish M₁ Spairs Θ ε) (h₂ : IsPufferfish M₂ Spairs Θ ε)
     (p : ℝ≥0∞) : IsPufferfish (Pufferfish.mixKernel p M₁ M₂) Spairs Θ ε :=
   h₁.convexComb h₂ p (1 - p) fun _ ↦ rfl
@@ -921,25 +925,51 @@ lemma Pufferfish.correlatedPrior_condRestInvariant :
   refine absurd ?_ ho
   fin_cases i <;> simp [Pufferfish.correlatedPrior, Measure.dirac_apply]
 
+/-- `Pufferfish.correlatedPrior` is a probability measure. -/
+lemma Pufferfish.isProbabilityMeasure_correlatedPrior :
+    IsProbabilityMeasure Pufferfish.correlatedPrior :=
+  ⟨by simp [Pufferfish.correlatedPrior, ENNReal.inv_two_add_inv_two]⟩
+
+/-- The evolution scenarios `D* ∪ {correlatedPrior}` used against Theorem 6.2 consist of
+probability measures. -/
+lemma Pufferfish.isProbabilityMeasure_of_mem_insert_correlatedPrior :
+    ∀ θ ∈ insert Pufferfish.correlatedPrior (Pufferfish.indepPriors (Fin 2) (Fin 3)),
+      IsProbabilityMeasure θ := by
+  rintro θ (rfl | ⟨q, hq, rfl⟩)
+  · exact Pufferfish.isProbabilityMeasure_correlatedPrior
+  · infer_instance
+
+/-- Adding `Pufferfish.correlatedPrior` to `D*` does not change `ε-PufferFish(S, Spairs, ·)`
+(equations (6)–(7)), which therefore stays equivalent to `ε`-differential privacy. -/
+theorem Pufferfish.isPufferfish_insert_correlatedPrior_iff {M : Kernel (Fin 2 → Fin 3) Y}
+    [IsFiniteKernel M] :
+    IsPufferfish M (Pufferfish.dpPairs 0)
+        (insert Pufferfish.correlatedPrior (Pufferfish.indepPriors _ _)) ε ↔
+      IsEpsDP M (Pufferfish.AddRemoveAdj 0) ε := by
+  rw [isPufferfish_insert_iff, isPufferfish_indepPriors_iff_isEpsDP]
+  rintro s s' ⟨i, t, -, hp⟩
+  obtain ⟨rfl, rfl⟩ := Prod.mk.inj hp
+  right
+  fin_cases i <;> simp [Pufferfish.correlatedPrior, Measure.dirac_apply]
+
 /-- **Theorem 6.2 of Kifer–Machanavajjhala is false as stated.** The theorem claims that for any
 set of evolution scenarios `D_other ⊄ D*`, `ε`-differential privacy is not equivalent to
 `ε-PufferFish(S, Spairs, D_other)` (with `S`, `Spairs` of equations (6)–(7)). But adding to `D*`
 the prior `Pufferfish.correlatedPrior`, under which every individual is present with
 probability one, gives `D_other ⊄ D*` imposing exactly the same constraints as `D*` (the
 conditions of Definition 3.4 are vacuous for a prior with `P(¬σᵢ) = 0`), so by Theorem 6.1
-`ε-PufferFish(S, Spairs, D_other)` is still equivalent to `ε`-differential privacy. -/
+`ε-PufferFish(S, Spairs, D_other)` is still equivalent to `ε`-differential privacy
+(`Pufferfish.isPufferfish_insert_correlatedPrior_iff`). All priors in the witness are
+probability measures (`Pufferfish.isProbabilityMeasure_of_mem_insert_correlatedPrior`), so the
+counterexample does not rely on degenerate measures such as `0`. -/
 theorem Pufferfish.exists_not_subset_indepPriors_isPufferfish_iff :
-    ∃ Θ : Set (Measure (Fin 2 → Fin 3)), ¬ Θ ⊆ Pufferfish.indepPriors (Fin 2) (Fin 3) ∧
+    ∃ Θ : Set (Measure (Fin 2 → Fin 3)), (∀ θ ∈ Θ, IsProbabilityMeasure θ) ∧
+      ¬ Θ ⊆ Pufferfish.indepPriors (Fin 2) (Fin 3) ∧
       ∀ (M : Kernel (Fin 2 → Fin 3) Y) [IsFiniteKernel M] (ε : ℝ),
-        IsPufferfish M (Pufferfish.dpPairs 0) Θ ε ↔ IsEpsDP M (Pufferfish.AddRemoveAdj 0) ε := by
-  refine ⟨insert Pufferfish.correlatedPrior (Pufferfish.indepPriors _ _),
+        IsPufferfish M (Pufferfish.dpPairs 0) Θ ε ↔ IsEpsDP M (Pufferfish.AddRemoveAdj 0) ε :=
+  ⟨_, Pufferfish.isProbabilityMeasure_of_mem_insert_correlatedPrior,
     fun h ↦ Pufferfish.correlatedPrior_notMem_indepPriors (h (mem_insert _ _)),
-    fun M _ ε ↦ ?_⟩
-  rw [isPufferfish_insert_iff, isPufferfish_indepPriors_iff_isEpsDP]
-  rintro s s' ⟨i, t, -, hp⟩
-  obtain ⟨rfl, rfl⟩ := Prod.mk.inj hp
-  right
-  fin_cases i <;> simp [Pufferfish.correlatedPrior, Measure.dirac_apply]
+    fun _ _ _ ↦ Pufferfish.isPufferfish_insert_correlatedPrior_iff⟩
 
 /-- The output probabilities `φ(p, a) = x^{[p] + [a]} / (x (1 + x))` of the mechanism in the
 proof of Theorem 6.2 are within a factor `x ≥ 1` of each other, together with their complements,

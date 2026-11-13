@@ -47,7 +47,8 @@ form (2) is `isEpsDP_iff_forall_singleton`. Distortion is the expected Hamming d
   `dpPrivacyDistortion_le_max_invOptDistortion`; lower bound →
   `max_invOptDistortion_sub_le_dpPrivacyDistortion`, together with `dpPrivacyDistortion_nonneg`.
 * Theorem 1, (18), lower bound `ε*_i(D) ≥ max {h⁻¹(D), ε_X}`, for `0 < D < n` and pairwise in
-  `ε_X` → `max_invOptDistortion_log_le_idPrivacyDistortion` (from
+  `ε_X` over neighbours of positive prior probability →
+  `max_invOptDistortion_log_le_idPrivacyDistortion` (from
   `invOptDistortion_le_idPrivacyDistortion` and `log_div_le_idPrivacyDistortion`).
 * Identifiability in terms of the joint law → `Identifiability.isIdentifiable_iff`.
 
@@ -543,30 +544,30 @@ theorem invOptDistortion_le_idPrivacyDistortion (hm : 2 ≤ Fintype.card D) {Dis
 
 omit [IsProbabilityMeasure pX] [IsMarkovKernel M] in
 /-- **Wang–Ying–Zhang, Theorem 1, (18)**, lower bound `ε*_i(D) ≥ ε_X` (via Lemma 3), pairwise:
-`log (p_X(x) / p_X(x')) ≤ ε*_i(D)` for all neighbours `x, x'` with `p_X(x') > 0` and every `D`.
-Taking the maximum over neighbours gives `ε*_i(D) ≥ ε_X` for a prior with full support. -/
+`log (p_X(x) / p_X(x')) ≤ ε*_i(D)` for all neighbours `x, x'` with `p_X(x), p_X(x') > 0` and
+every `D`. Both probabilities are positive, so the logarithm is the usual one (Lean's
+`Real.log 0 = 0` is never used). Taking the maximum over neighbours gives `ε*_i(D) ≥ ε_X` for a
+prior with full support. -/
 theorem log_div_le_idPrivacyDistortion {x x' : ι → D} (hxx' : hammingDist x x' = 1)
-    (hx' : 0 < pX.real {x'}) (Dist : ℝ) :
+    (hx : 0 < pX.real {x}) (hx' : 0 < pX.real {x'}) (Dist : ℝ) :
     (log (pX.real {x} / pX.real {x'}) : EReal) ≤ idPrivacyDistortion pX Dist := by
   refine le_sInf ?_
-  rintro e ⟨ε, rfl, hε, M, hM, hid, -⟩
+  rintro e ⟨ε, rfl, -, M, hM, hid, -⟩
   refine EReal.coe_le_coe_iff.2 ?_
-  rcases (measureReal_nonneg : 0 ≤ pX.real {x}).eq_or_lt with h0 | h0
-  · rw [← h0, zero_div, log_zero]; exact hε
-  rw [log_le_iff_le_exp (div_pos h0 hx'), div_le_iff₀ hx']
+  rw [log_le_iff_le_exp (div_pos hx hx'), div_le_iff₀ hx']
   exact hid.measureReal_le hxx'
 
 omit [IsMarkovKernel M] in
 /-- **Wang–Ying–Zhang, Theorem 1, (18)**, the lower bound `ε*_i(D) ≥ max {h⁻¹(D), ε_X}`, pairwise
 in `ε_X`, for finite rows and domain with `m ≥ 2` and `0 < D < n`: for all neighbours `x, x'`
-with `p_X(x') > 0`, `max {h⁻¹(D), log (p_X(x) / p_X(x'))} ≤ ε*_i(D)`. -/
+with `p_X(x), p_X(x') > 0`, `max {h⁻¹(D), log (p_X(x) / p_X(x'))} ≤ ε*_i(D)`. -/
 theorem max_invOptDistortion_log_le_idPrivacyDistortion (hm : 2 ≤ Fintype.card D) {Dist : ℝ}
     (hD : 0 < Dist) (hDn : Dist < Fintype.card ι) {x x' : ι → D} (hxx' : hammingDist x x' = 1)
-    (hx' : 0 < pX.real {x'}) :
+    (hx : 0 < pX.real {x}) (hx' : 0 < pX.real {x'}) :
     ((max (invOptDistortion ι D Dist) (log (pX.real {x} / pX.real {x'})) : ℝ) : EReal) ≤
       idPrivacyDistortion pX Dist := by
   rw [EReal.coe_strictMono.monotone.map_max]
   exact max_le (invOptDistortion_le_idPrivacyDistortion hm hD hDn)
-    (log_div_le_idPrivacyDistortion hxx' hx' Dist)
+    (log_div_le_idPrivacyDistortion hxx' hx hx' Dist)
 
 end InformationTheory

@@ -22,8 +22,8 @@ Databases are vectors `x : ι → D` with the Hamming distance, as in
 `InfoLeakage.SmoothSensitivity.Basic`, and neighbours are databases at Hamming distance `1`.
 **Restriction:** the domain `D` is **finite** (`[Finite D]`), whereas the paper allows any `D`
 (its examples use `D = [0, Λ]`). Privacy is `IsEpsDeltaDP` from `InfoLeakage.FDP.Basic`. The
-noise is a measure `ν` on `ℝ`, meant to be a probability measure (the case `d = 1` of the paper,
-which takes `ν` with a density `h` on `ℝᵈ`; no density is needed here).
+noise is a probability measure `ν` on `ℝ`, which `IsAdmissibleNoise` requires (the case `d = 1`
+of the paper, which takes `ν` with a density `h` on `ℝᵈ`; no density is needed here).
 
 ## Main definitions
 
@@ -35,20 +35,31 @@ which takes `ν` with a density `h` on `ℝᵈ`; no density is needed here).
 
 * Lemma 2.6, in the form its proof gives (see the notes below):
   `IsAdmissibleNoise.isEpsDeltaDP_smoothNoiseMechanism`, giving
-  `(ε, (1 + e^{ε/2}) δ / 2)`-DP.
-* The general step behind Lemma 2.6, with separate parameters for the sliding and the dilation
-  property: `SmoothSensitivity.isEpsDeltaDP_of_dilation_of_sliding`.
+  `(ε, (1 + e^{ε/2}) δ / 2)`-DP. The paper's `(ε, δ)` is false in general (see the notes).
+* The general step behind Lemma 2.6, for an arbitrary measure `ν` (no normalization needed) and
+  with separate parameters for the sliding and the dilation property:
+  `SmoothSensitivity.isEpsDeltaDP_of_dilation_of_sliding`.
 
 ## Notes on the paper
 
 * Proof of Lemma 2.6 (Section 2.2.1, p. 9, v1.0): the last line of the display,
-  `Pr[z ∈ S₃] e^ε + (δ/2) e^{ε/2} + δ/2 = Pr[A(y) ∈ S] e^ε + δ`, is not an equality for
-  `ε > 0`, since `(δ/2) e^{ε/2} + δ/2 > δ`. The argument proves
-  `(ε, (1 + e^{ε/2}) δ / 2)`-differential privacy, which is what we formalize; we do not settle
-  whether `(ε, δ)` holds for every admissible distribution. When the sliding property holds with
-  no additive term (as for Laplace noise), the argument applied in the order dilation, then
-  sliding gives `(ε, δ/2)`, which implies the paper's `(ε, δ)`
-  (`SmoothSensitivity.isEpsDeltaDP_of_dilation_of_sliding`).
+  `Pr[z ∈ S₃] e^ε + (δ/2) e^{ε/2} + δ/2 = Pr[A(y) ∈ S] e^ε + δ`, is not an equality when
+  `ε > 0` and `δ > 0`, since then `(δ/2) e^{ε/2} + δ/2 > δ` (the step is fine when `δ = 0`).
+  The argument proves `(ε, (1 + e^{ε/2}) δ / 2)`-differential privacy, which is what we
+  formalize. When the sliding property holds with no additive term (as for Laplace noise), the
+  argument applied in the order dilation, then sliding gives `(ε, δ/2)`, which implies the
+  paper's `(ε, δ)` (`SmoothSensitivity.isEpsDeltaDP_of_dilation_of_sliding`).
+* The `(ε, δ)` claim of Lemma 2.6 is **false** for general admissible noise. Counterexample
+  (numerical: found by OpenAI Codex and checked numerically with independent code; not proved
+  in Lean): `ν = N(1000, 1)`, `ε = 0.5`, `δ = 0.224`, `α = 0.5`, `β = log 1.0005`. Over
+  `|Δ| ≤ α`, `|s| ≤ β` and all `E`, the sliding deficit `P[Z ∈ E] - e^{ε/2} P[Z ∈ E + Δ]` is at
+  most `≈ 0.11030` and the dilation deficit `P[Z ∈ E] - e^{ε/2} P[Z ∈ e^s E]` at most
+  `≈ 0.11035`, both below `δ/2 = 0.112`, so `ν` is `(α, β)`-admissible. For two neighbouring
+  databases `x, y` with `f(x) = 0`, `f(y) = 0.5`, `S(x) = 0.5`, `S(y) = 0.50025` (a `β`-smooth
+  upper bound on `LS_f`, as `0.50025 = e^β · 0.5`), the outputs are `Z` and `0.5 + 1.0005 Z`, and
+  for `E = (-∞, 1000]`,
+  `P[A(x) ∈ E] - e^ε P[A(y) ∈ E] = 1/2 - e^{1/2} Φ(-1/1.0005) ≈ 0.23822 > δ`.
+  This is consistent with the weakened bound `(1 + e^{ε/2}) δ / 2 ≈ 0.2558` formalized here.
 * The proof of Lemma 2.6 divides by `N(x) = S(x)/α`, which may be `0`; then `S` vanishes at `x`
   and its neighbours, `f(x) = f(y)` and the two output laws coincide (handled separately here).
 
@@ -69,7 +80,7 @@ variable {ι D : Type*} [Fintype ι] {f : (ι → D) → ℝ}
 
 /-! ### Admissible noise distributions -/
 
-/-- A measure `ν` on `ℝ` is **`(α, β)`-admissible** for the privacy parameters
+/-- A probability measure `ν` on `ℝ` is **`(α, β)`-admissible** for the privacy parameters
 `(ε, δ)` (Nissim–Raskhodnikova–Smith, Definition 2.5, case `d = 1`) if for all `|Δ| ≤ α`,
 `|s| ≤ β` and every measurable set `E`, with `Z ∼ ν`:
 * (sliding) `P[Z ∈ E] ≤ e^{ε/2} P[Z ∈ E + Δ] + δ/2`, and
@@ -77,10 +88,11 @@ variable {ι D : Type*} [Fintype ι] {f : (ι → D) → ℝ}
 The translate `E + Δ` is written as the preimage `{z | z - Δ ∈ E}` and the dilate `e^s · E` as
 `{z | e^{-s} z ∈ E}`.
 
-The definition is meant for probability measures `ν` (as the paper's noise distributions and
-`isAdmissibleNoise_laplace` are): `ν.real` sends sets of infinite measure to `0`, so for an
-infinite `ν` the conditions are close to vacuous. -/
+The field `isProbabilityMeasure` makes `ν` a noise *distribution*, as in the paper: without it,
+`ν = 0`, or an infinite `ν` (whose sets of infinite measure have `ν.real` equal to `0`), would
+satisfy the two inequalities while the mechanism outputs no probability distribution. -/
 structure IsAdmissibleNoise (ν : Measure ℝ) (α β ε δ : ℝ) : Prop where
+  isProbabilityMeasure : IsProbabilityMeasure ν
   sliding ⦃Δ : ℝ⦄ : |Δ| ≤ α → ∀ E, MeasurableSet E →
     ν.real E ≤ exp (ε / 2) * ν.real ((· - Δ) ⁻¹' E) + δ / 2
   dilation ⦃s : ℝ⦄ : |s| ≤ β → ∀ E, MeasurableSet E →
@@ -113,6 +125,13 @@ instance [IsProbabilityMeasure ν] : IsMarkovKernel (smoothNoiseMechanism ν f S
     rw [smoothNoiseMechanism_apply]
     infer_instance⟩
 
+/-- With admissible noise, the smooth sensitivity mechanism is a randomized algorithm: every
+output law is a probability measure. -/
+lemma IsAdmissibleNoise.isMarkovKernel_smoothNoiseMechanism {β ε δ : ℝ}
+    (hν : IsAdmissibleNoise ν α β ε δ) : IsMarkovKernel (smoothNoiseMechanism ν f S α) :=
+  have := hν.isProbabilityMeasure
+  inferInstance
+
 /-! ### Privacy of the smooth sensitivity mechanism -/
 
 namespace SmoothSensitivity
@@ -131,7 +150,9 @@ private lemma abs_log_div_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a ≤ 
   rw [log_div ha.ne' hb.ne', abs_le]
   constructor <;> linarith
 
-/-- **The step behind Nissim–Raskhodnikova–Smith, Lemma 2.6**, with separate parameters for the
+/-- **The step behind Nissim–Raskhodnikova–Smith, Lemma 2.6**, in general form: for an
+arbitrary measure `ν` (normalization is not needed for the inequality; the paper-facing
+`IsAdmissibleNoise` requires a probability measure) and with separate parameters for the
 two properties of Definition 2.5: if `ν` satisfies the sliding property
 `P[Z ∈ E] ≤ e^{ε₁} P[Z ∈ E + Δ] + δ₁` for `|Δ| ≤ α` and the dilation property
 `P[Z ∈ E] ≤ e^{ε₂} P[Z ∈ e^s E] + δ₂` for `|s| ≤ β`, and `S` is a `β`-smooth upper bound on
@@ -207,8 +228,10 @@ end SmoothSensitivity
 /-- **Nissim–Raskhodnikova–Smith, Lemma 2.6** (case `d = 1`, in the form its proof gives): if
 the noise distribution `ν` is `(α, β)`-admissible for `(ε, δ)` and `S` is a `β`-smooth upper
 bound on the local sensitivity of `f`, then `A(x) = f(x) + S(x)/α · Z`, `Z ∼ ν`, is
-`(ε, (1 + e^{ε/2}) δ / 2)`-differentially private. The paper claims `(ε, δ)`, see the notes in
-the module docstring. -/
+`(ε, (1 + e^{ε/2}) δ / 2)`-differentially private; as `ν` is a probability measure, the
+mechanism is a randomized algorithm (`IsAdmissibleNoise.isMarkovKernel_smoothNoiseMechanism`).
+The paper claims `(ε, δ)`, which is false for general admissible noise (numerical
+counterexample in the module docstring). -/
 theorem IsAdmissibleNoise.isEpsDeltaDP_smoothNoiseMechanism [DecidableEq D]
     {β ε δ : ℝ} (hν : IsAdmissibleNoise ν α β ε δ)
     (hS : IsSmoothUpperBound f β S) (hα : 0 < α) (hε : 0 ≤ ε) (hδ : 0 ≤ δ) :

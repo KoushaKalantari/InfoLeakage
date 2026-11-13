@@ -1153,7 +1153,11 @@ variable [Fintype X] [MeasurableSingletonClass X] [Fintype Y] [MeasurableSinglet
   [Fintype Z] [MeasurableSingletonClass Z] {μ : Measure X} {κ : Kernel X Y}
 
 omit [Fintype Z] [MeasurableSingletonClass Z] in
-/-- **Theorem 17 of Alvim et al. (CSF 2014)**: `L+_∀(π, C) = K([π], [π, C])`. -/
+/-- **Theorem 17 of Alvim et al. (CSF 2014), closed-form consequence only**: the additive
+`π`-capacity is the closed form of Appendix B, `L+_∀(π, C) = ∑_{y, x} π[x] |C[x, y] - p(y)| / 2`
+(`hyperKantorovich μ κ`). The paper identifies this value with the Kantorovich distance
+`K([π], [π, C])` between hypers; that abstract distance and its identification with
+`hyperKantorovich` are not formalized. -/
 theorem addCapacityAt_eq [IsProbabilityMeasure μ] [IsMarkovKernel κ] :
     addCapacityAt μ κ = hyperKantorovich μ κ :=
   isGreatest_addGLeakage.csSup_eq

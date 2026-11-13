@@ -46,7 +46,9 @@ of [CABP]). `K` is `d`-private if `K(x)(E) ≤ e^{d(x, x')} K(x')(E)` for all `x
   `MetricDP.graphDist_hammingAdj` (the Hamming graph distance is `hammingDist`); generalization
   to an arbitrary adjacency relation and its graph distance (`ε > 0`):
   `isEpsDP_iff_isMetricDP_graphDist`.
-* Lemma 2 (tight chains, one direction as in the paper): `MetricDP.le_smul_of_tight_chain`.
+* Lemma 2 (tight chains), its directed component (the paper's bound
+  `d_P(K(x₁), K(xₙ)) ≤ d_X(x₁, xₙ)` is two-sided; the other direction needs the reverse edge
+  inequalities): `MetricDP.le_smul_of_tight_chain`.
 * Theorem 3 (hiding functions; Theorem 3.1 of [ABCP]), direction `⟹`, finitely supported priors,
   symmetric `d`, pointwise posterior-ratio form: `IsMetricDP.bayes_comap_le`.
 * Theorem 4 (informed adversary; Theorem 3.2 of [ABCP]), direction `⟹`, finitely supported priors
@@ -427,9 +429,13 @@ end MetricDP
 
 /-- **Lemma 2** of Chatzikokolakis–Andrés–Bordenabe–Palamidessi: if `c 0 = x, …, c n = x'` is a
 tight chain (`∑_{i < n} d(c i, c (i + 1)) = d(x, x')`) and `K` satisfies the `d`-privacy
-inequality for all consecutive elements of the chain, then it satisfies it for `x, x'`. Like the
-paper's statement, this is one-directional (it bounds `K(x)` by `K(x')`); the bound in the other
-direction follows by applying it to the reversed chain, which is tight when `d` is symmetric. -/
+inequality for all consecutive elements of the chain, then it satisfies it for `x, x'`. This is
+the directed component of the paper's lemma: the paper concludes the symmetric bound
+`d_P(K(x₁), K(xₙ)) ≤ d_X(x₁, xₙ)`, whereas this bounds `K(x)` by `K(x')` from the directed edge
+inequalities `K(c i) ≤ e^{d(c i, c (i + 1))} K(c (i + 1))`. Symmetry of `d` alone does not give
+the other direction: it follows by applying this to the reversed chain (tight when `d` is
+symmetric) under the reverse edge inequalities `K(c (i + 1)) ≤ e^{d(c (i + 1), c i)} K(c i)`,
+which the paper's hypothesis `d_P(K(c i), K(c (i + 1))) ≤ d(c i, c (i + 1))` provides. -/
 theorem MetricDP.le_smul_of_tight_chain {c : ℕ → X} {n : ℕ} {x x' : X} (hc₀ : c 0 = x)
     (hcn : c n = x') (htight : ∑ i ∈ Finset.range n, d (c i) (c (i + 1)) = d x x')
     (h : ∀ i < n, d (c i) (c (i + 1)) ≠ ∞ →
@@ -610,13 +616,17 @@ variable {ι V : Type*} [Fintype ι]
 
 /-- The Manhattan metric `d₁(x, x') = ∑_i d_V(x[i], x'[i])` on databases `x, x' : ι → V`
 induced by a distance `d_V` on the universe of values (Section 5.1 of Chatzikokolakis–Andrés–
-Bordenabe–Palamidessi). The normalized Manhattan metric of the paper is `d₁ / d_V(V)`. -/
+Bordenabe–Palamidessi). The normalized Manhattan metric of the paper is `d₁ / d_V(V)`, with
+`0 < d_V(V) < ∞`. -/
 noncomputable def manhattanDist (dV : V → V → ℝ≥0∞) (x x' : ι → V) : ℝ≥0∞ :=
   ∑ i, dV (x i) (x' i)
 
 /-- **Proposition 3** of Chatzikokolakis–Andrés–Bordenabe–Palamidessi, metric inequality: the
 normalized Manhattan metric is at most the Hamming metric, `d₁ / M ≤ d_h`, whenever `d_V` vanishes
-on the diagonal and `M` bounds `d_V` (the paper takes `M = d_V(V)`, the diameter of `V`). -/
+on the diagonal and `M` bounds `d_V` (the paper takes `M = d_V(V)`, the diameter of `V`). The
+paper's normalization is the case `0 < M < ∞`. The degenerate cases are convention-dependent
+extensions, where the inequality holds trivially: in `ℝ≥0∞`, `M = ∞` makes every quotient
+`d₁ / M` zero (including `∞ / ∞ = 0`), and `M = 0` forces `d_V = 0`, so `d₁ / M = 0 / 0 = 0`. -/
 theorem manhattanDist_div_le_hammingDist [DecidableEq V] {dV : V → V → ℝ≥0∞}
     (hself : ∀ v, dV v v = 0) {M : ℝ≥0∞} (hM : ∀ v v', dV v v' ≤ M) (x x' : ι → V) :
     manhattanDist dV x x' / M ≤ hammingDist x x' := by
@@ -636,7 +646,10 @@ open MetricDP
 /-- **Proposition 3** of Chatzikokolakis–Andrés–Bordenabe–Palamidessi: `ε d̃₁`-privacy for the
 normalized Manhattan metric `d̃₁ = d₁ / d_V(V)` implies `ε d_h`-privacy, hence (for a finite
 kernel) standard `ε`-differential privacy (`isEpsDP_hammingAdj_iff`). Here `M` is any upper bound
-on `d_V` (the paper's `d_V(V)`), and `d_V` vanishes on the diagonal. -/
+on `d_V` (the paper's `d_V(V)`), and `d_V` vanishes on the diagonal. The paper's normalization is
+the case `0 < M < ∞`; for `M = ∞` or `M = 0` the quotient is `0` by the `ℝ≥0∞` conventions
+(`∞ / ∞ = 0 / 0 = 0`), so the hypothesis becomes `0`-privacy, a convention-dependent degenerate
+case (see `MetricDP.manhattanDist_div_le_hammingDist`). -/
 theorem IsMetricDP.isEpsDP_of_manhattanDist {ι V : Type*} [Fintype ι] [DecidableEq V]
     [MeasurableSpace V] {M' : Kernel (ι → V) Z} [IsFiniteKernel M'] {dV : V → V → ℝ≥0∞}
     (hself : ∀ v, dV v v = 0) {M : ℝ≥0∞} (hM : ∀ v v', dV v v' ≤ M) {ε : ℝ≥0}

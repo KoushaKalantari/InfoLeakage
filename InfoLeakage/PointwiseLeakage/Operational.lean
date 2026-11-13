@@ -15,8 +15,9 @@ Saeidian, Cervia, Oechtering and Skoglund (*Pointwise maximal leakage*, IEEE Tra
 pointwise maximal leakage from `X` to an outcome `y` of `Y` operationally, as
 `ℓ(X → y) = log sup_{P_{U|X}} (sup_{P_{Û|Y}} P[U = Û | Y = y]) / max_u P_U(u)`,
 the supremum ranging over all random variables `U` on a finite alphabet forming the Markov chain
-`U - X - Y`, and all guesses `Û` of `U` made from `Y`. It is the largest multiplicative gain that
-observing `Y = y` gives an adversary guessing *some* randomized function `U` of `X`. Their
+`U - X - Y`, and all guesses `Û` of `U` made from `Y`. It is the logarithm of the largest
+multiplicative gain that observing `Y = y` gives an adversary guessing *some* randomized function
+`U` of `X`. Their
 Theorem 1 evaluates it in closed form,
 `ℓ(X → y) = log max_{x ∈ supp P_X} P_{X|Y=y}(x) / P_X(x)`.
 
@@ -44,10 +45,11 @@ gives nothing more.
 
 The paper attains the supremum with the shattering channel of Issa–Wagner–Kamath
 (Definition 2), which splits every `x ∈ supp P_X` into symbols of probability
-`min_{x ∈ supp P_X} P_X(x)`. For a single outcome a simpler randomization suffices: if `x*`
-maximizes `P_{Y|X}(y | x)` on `supp P_X`, let `U = (x*, 0)` when `X = x*`, and `U = (X, J)` with
-`J` uniform on `{1, …, k}` otherwise, for `k` large enough that `1 / k < P_X(x*)`; see
-`le_opPointwiseMaxLeakageRatio`.
+`p_min = min_{x ∈ supp P_X} P_X(x)`, plus possibly one remainder symbol of smaller probability per
+input (for prior masses `(0.4, 0.6)` the masses are `(0.4, 0.4, 0.2)`). For a single outcome a
+simpler randomization suffices: if `x*` maximizes `P_{Y|X}(y | x)` on `supp P_X`, let
+`U = (x*, 0)` when `X = x*`, and `U = (X, J)` with `J` uniform on `{1, …, k}` otherwise, for `k`
+large enough that `1 / k < P_X(x*)`; see `le_opPointwiseMaxLeakageRatio`.
 -/
 
 @[expose] public section

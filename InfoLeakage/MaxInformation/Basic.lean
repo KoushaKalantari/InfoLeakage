@@ -79,6 +79,16 @@ Theorem 17 and Lemma 18 on description length; Theorem 20 on i.i.d. datasets), t
 
 ## Implementation notes
 
+* Scope. `expMaxInformation` is a supremum over singletons, so it (and `maxInformation`,
+  `HasMaxInformation`) has its probabilistic meaning only when the laws involved are purely
+  atomic; this file gives that meaning for finite alphabets with measurable singletons. Several
+  declarations nevertheless leave the output type unrestricted (e.g. `expMaxInformation_le_iff`,
+  `expMaxInformation_comp_le`, `hasMaxInformation_iff`, `hasMaxInformation_iff_isLocalDP`,
+  `HasMaxInformation.snd_compProd`, `hasMaxInformation_of_isEpsDeltaDP`). They remain true, but
+  for a diffuse output law every singleton ratio is `0 / 0 = 0`, so `maxInformation = ⊥` and
+  `HasMaxInformation A k` holds vacuously, and the singleton-based `IsLocalDP` need not mean
+  event-based local differential privacy. Read them as statements about max-information only when
+  the output alphabet is finite (or, more generally, the laws are purely atomic).
 * Differential privacy is the library's `IsEpsDeltaDP M Adj ε 0`, with `M : Kernel (ι → 𝒳) Z`
   and `Adj S S'` the relation `hammingDist S S' = 1` (the datasets differ in exactly one record),
   as in Definition 2 of the paper.
@@ -95,20 +105,21 @@ Theorem 17 and Lemma 18 on description length; Theorem 20 on i.i.d. datasets), t
 * Proof of Theorem 19 (Section 3.1.2, p. 13 of arXiv v2): "By Lemma 3 we obtain the claim" should
   cite Lemma 12 (Theorem 3 is the composition theorem for differential privacy). The theorem is
   true (`hasMaxInformation_of_isEpsDeltaDP`).
-* Proof of Lemma 14 (Section 3, pp. 10–11 of arXiv v2): this is a gap in the proof, not an error
-  in the statement for `β₁ = β₂ = 0`, which is true and is proved here
-  (`HasMaxInformation.snd_compProd`, via Lemma 12). The proof fixes one distribution `D` of the
-  dataset `𝐒` and uses the hypotheses only at `D` and, trivially, at point masses. Its final
-  equality reads `∑_{S, y} P[S × B(S, y) ∈ Q] · P[𝐒 = S] · P[A(𝐒) = y] = P[𝐒 × B(𝐒, A(𝐒)) ∈ Q]`
-  with `S` a fixed dataset, so the left side is the probability of `(S, B(S, y))` with
-  `(S, y) ∼ D × P_{A(𝐒)}`, where `B`'s input is tied to the first coordinate, and the right side is
-  that of `(𝐒, B(𝐒', A(𝐒')))` with independent copies `𝐒, 𝐒'`; the equality fails in general. For
-  a fixed `D` the conclusion itself can fail, already for `β₁ = β₂ = 0`:
+* Proof of Lemma 14 (Section 3, pp. 10–11 of arXiv v2): a published proof gap. The lemma is true
+  for `β₁ = β₂ = 0` and is proved here (`HasMaxInformation.snd_compProd`, via Lemma 12 rather than
+  the paper's argument). The paper's proof fixes one distribution `D` of the dataset `𝐒` and uses
+  the hypotheses only at `D` and, trivially, at point masses. Its final equality,
+  `∑_{S, y} P[S × B(S, y) ∈ Q] · P[𝐒 = S] · P[A(𝐒) = y] = P[𝐒 × B(𝐒, A(𝐒)) ∈ Q]`, replaces the
+  law of `(𝐒, B(𝐒, Y))`, with `𝐒 ∼ D` and `Y ∼ P_{A(𝐒)}` independent, by the law of
+  `(𝐒, B(𝐒', A(𝐒')))`, with `𝐒, 𝐒'` independent copies; these differ in general. Read with this
+  fixed-prior quantification (hypotheses and conclusion at one `D`), the last step would prove a
+  statement that is false, already for `β₁ = β₂ = 0`:
   `MaxInformation.exists_not_maxInformation_snd_compProd_le` (for `𝐒` on `{0, 1, 2}` with
   probabilities `1/10, 9/20, 9/20` and the deterministic algorithms `A(S) = [S = 2]`,
   `B(S, 0) = [S = 1]`, `B(S, 1) = 1`, the hypotheses hold at `D` with `k₁ = k₂ = log (20/9)`, while
-  `C(S) = B(S, A(S)) = [S ≠ 0]` has `I∞(𝐒; C(𝐒)) = log 10 > 2 log (20/9)`). The case `β > 0` is not
-  examined here.
+  `C(S) = B(S, A(S)) = [S ≠ 0]` has `I∞(𝐒; C(𝐒)) = log 10 > 2 log (20/9)`). The counterexample
+  refutes only this fixed-prior version, not Lemma 14, whose hypotheses quantify over every prior.
+  Nothing is claimed here about `β > 0`.
 -/
 
 @[expose] public section
@@ -127,7 +138,9 @@ variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β
 input `X ∼ μ` and the output `Y` of the channel `κ`, in `ℝ≥0∞`. It is the exponential of
 `D∞(P_XY ‖ P_X × P_Y)`, with `P_XY = μ ⊗ₘ κ` and `P_X × P_Y = μ.prod (κ ∘ₘ μ)`. The supremum
 ranges over singletons, so this is that exponential only when both laws are purely atomic, e.g.
-for countable alphabets with measurable singletons; every result below assumes finite alphabets. -/
+for countable alphabets with measurable singletons; its probabilistic interpretation below is for
+finite alphabets. Some results below leave the output type unrestricted; for a diffuse output law
+every ratio is `0 / 0 = 0` and this is `0` (see the scope note in the module docstring). -/
 noncomputable def expMaxInformation (μ : Measure α) (κ : Kernel α β) : ℝ≥0∞ :=
   expRenyiDivInf (μ ⊗ₘ κ) (μ.prod (κ ∘ₘ μ))
 
@@ -284,7 +297,8 @@ variable [Finite α] [MeasurableSingletonClass α] [Finite β] [MeasurableSingle
   [MeasurableSingletonClass γ] [IsMarkovKernel κ]
 
 /-- **Post-processing** (Lemma 16 of Dwork et al., with `β = 0`), multiplicative form: passing the
-output through a further channel `η` cannot increase the max-information. -/
+output through a further channel `η` cannot increase the max-information. The output type `γ`
+of `η` is not assumed finite; see the scope note in the module docstring. -/
 theorem expMaxInformation_comp_le [IsFiniteMeasure μ] (η : Kernel β γ) [IsMarkovKernel η] :
     expMaxInformation μ (η ∘ₖ κ) ≤ expMaxInformation μ κ := by
   have := Fintype.ofFinite β
@@ -308,7 +322,8 @@ end PostProcessing
 
 /-- An algorithm (channel) `A` **has max-information `k`** if `I∞(S; A(S)) ≤ k` for every
 distribution of the input `S` (Definition 11 of Dwork et al., with `β = 0`). It is meant for
-finite alphabets with measurable singletons, where `maxInformation` is the max-information. -/
+finite alphabets with measurable singletons, where `maxInformation` is the max-information; for a
+diffuse output law it holds vacuously (`maxInformation = ⊥`). -/
 def HasMaxInformation (A : Kernel α β) (k : ℝ) : Prop :=
   ∀ μ : Measure α, IsProbabilityMeasure μ → maxInformation μ A ≤ k
 
@@ -331,7 +346,8 @@ variable [Finite α] [MeasurableSingletonClass α] [MeasurableSingletonClass β]
   {A : Kernel α β} [IsMarkovKernel A] {k : ℝ}
 
 /-- One direction of Lemma 12 of Dwork et al.: if `P[A(S) = y] ≤ e^k P[A(S') = y]` for all inputs
-`S, S'`, then `A` has max-information `k`. -/
+`S, S'`, then `A` has max-information `k`. The output type is not assumed finite; see the scope
+note in the module docstring. -/
 theorem hasMaxInformation_of_forall_le
     (h : ∀ S S' y, A S {y} ≤ ENNReal.ofReal (exp k) * A S' {y}) : HasMaxInformation A k := by
   have := Fintype.ofFinite α
@@ -347,7 +363,8 @@ theorem hasMaxInformation_of_forall_le
         simp_rw [mul_assoc]
 
 /-- **Lemma 12 of Dwork et al.** (with `β = 0`), pointwise form: an algorithm has max-information
-`k` iff `P[A(S) = y] ≤ e^k P[A(S') = y]` for all inputs `S, S'` and outputs `y`. -/
+`k` iff `P[A(S) = y] ≤ e^k P[A(S') = y]` for all inputs `S, S'` and outputs `y`. The output type
+is not assumed finite; see the scope note in the module docstring. -/
 theorem hasMaxInformation_iff :
     HasMaxInformation A k ↔ ∀ S S' y, A S {y} ≤ ENNReal.ofReal (exp k) * A S' {y} := by
   refine ⟨fun h S S' y ↦ ?_, hasMaxInformation_of_forall_le⟩
@@ -379,7 +396,8 @@ theorem hasMaxInformation_iff :
       (mul_nonneg (sub_nonneg.2 ht.2.le) ENNReal.toReal_nonneg)))).1 h'
 
 /-- **Lemma 12 of Dwork et al.** (with `β = 0`): an algorithm has max-information `k` iff
-`D∞(A(S) ‖ A(S')) ≤ k` for all inputs `S, S'`, i.e. `I∞(A) = max_{S, S'} D∞(A(S) ‖ A(S'))`. -/
+`D∞(A(S) ‖ A(S')) ≤ k` for all inputs `S, S'`, i.e. `I∞(A) = max_{S, S'} D∞(A(S) ‖ A(S'))`.
+The output type is not assumed finite; see the scope note in the module docstring. -/
 theorem hasMaxInformation_iff_expRenyiDivInf_le :
     HasMaxInformation A k ↔ ∀ S S', expRenyiDivInf (A S) (A S') ≤ ENNReal.ofReal (exp k) := by
   rw [hasMaxInformation_iff]
@@ -403,7 +421,9 @@ lemma MaxInformation.snd_compProd_apply_singleton [Fintype β] [MeasurableSingle
 
 /-- **Lemma 14 of Dwork et al.** (adaptive composition, with `β₁ = β₂ = 0`): if `A` has
 max-information `k₁` and `B(·, y)` has max-information `k₂` for every `y`, then the adaptive
-composition `C(S) = B(S, A(S))`, i.e. `(A ⊗ₖ B).snd`, has max-information `k₁ + k₂`. -/
+composition `C(S) = B(S, A(S))`, i.e. `(A ⊗ₖ B).snd`, has max-information `k₁ + k₂`. The output
+type `γ` of `B` is not assumed finite; the conclusion is a statement about max-information only for
+finite (more generally, purely atomic) outputs (see the scope note in the module docstring). -/
 theorem HasMaxInformation.snd_compProd [Finite β] [MeasurableSingletonClass γ]
     {B : Kernel (α × β) γ} [IsMarkovKernel B] {k₁ k₂ : ℝ} (hA : HasMaxInformation A k₁)
     (hB : ∀ y, HasMaxInformation (B.sectL y) k₂) :
@@ -423,7 +443,11 @@ theorem HasMaxInformation.snd_compProd [Finite β] [MeasurableSingletonClass γ]
         ring
 
 /-- A channel has max-information `ε` iff it is `ε`-locally differentially private
-(`IsLocalDP`, every pair of inputs being neighbours); this is Lemma 12 of Dwork et al. -/
+(`IsLocalDP`, every pair of inputs being neighbours); this is Lemma 12 of Dwork et al. The output
+type is not assumed finite. `IsLocalDP` here compares singleton masses, so for a finite output
+alphabet it is `ε`-local differential privacy, but for a diffuse output law both sides hold
+vacuously and it need not imply event-based local DP (see the scope note in the module
+docstring). -/
 theorem hasMaxInformation_iff_isLocalDP :
     HasMaxInformation A k ↔ IsLocalDP (fun x y ↦ (A x {y}).toReal) k := by
   rw [hasMaxInformation_iff]
@@ -433,7 +457,8 @@ theorem hasMaxInformation_iff_isLocalDP :
     ENNReal.ofReal_le_ofReal_iff (mul_nonneg (exp_pos k).le ENNReal.toReal_nonneg)]
 
 /-- **Local differential privacy bounds max-information**: if the channel `κ` is
-`ε`-locally differentially private, then `I∞(X; Y) ≤ ε` for every input distribution. -/
+`ε`-locally differentially private, then `I∞(X; Y) ≤ ε` for every input distribution. The
+same scope remark as for `hasMaxInformation_iff_isLocalDP` applies. -/
 theorem maxInformation_le_of_isLocalDP {ε : ℝ} (hA : IsLocalDP (fun x y ↦ (A x {y}).toReal) ε)
     (μ : Measure α) [IsProbabilityMeasure μ] : maxInformation μ A ≤ ε :=
   hasMaxInformation_iff_isLocalDP.2 hA μ inferInstance
@@ -492,7 +517,8 @@ lemma IsEpsDeltaDP.apply_singleton_le_hammingDist [IsFiniteKernel M]
 /-- **Theorem 19 of Dwork et al.**: an `ε`-differentially private algorithm on datasets with `n`
 records (here `ι → 𝒳` with `n = |ι|`; neighbours differ in exactly one record) has
 max-information at most `ε n` (in nats; the paper's `log₂ e · ε n` bits), for every distribution
-of the dataset. -/
+of the dataset. The output type `Z` is not assumed finite; for a diffuse output law (e.g. the
+Laplace mechanism) the conclusion holds vacuously (see the scope note in the module docstring). -/
 theorem hasMaxInformation_of_isEpsDeltaDP [Finite 𝒳] [MeasurableSingletonClass 𝒳]
     [MeasurableSingletonClass Z] [IsMarkovKernel M] (hε : 0 ≤ ε)
     (hM : IsEpsDeltaDP M (fun S S' ↦ hammingDist S S' = 1) ε 0) :
@@ -503,7 +529,8 @@ theorem hasMaxInformation_of_isEpsDeltaDP [Finite 𝒳] [MeasurableSingletonClas
   exact_mod_cast hammingDist_le_card_fintype
 
 /-- **Theorem 19 of Dwork et al.**, for datasets `S ∈ 𝒳ⁿ`: an `ε`-differentially private algorithm
-satisfies `I∞(S; A(S)) ≤ ε n` for every distribution of `S`. -/
+satisfies `I∞(S; A(S)) ≤ ε n` for every distribution of `S`. The same scope remark as for
+`hasMaxInformation_of_isEpsDeltaDP` applies. -/
 theorem maxInformation_le_of_isEpsDeltaDP {n : ℕ} {M : Kernel (Fin n → 𝒳) Z} [Finite 𝒳]
     [MeasurableSingletonClass 𝒳] [MeasurableSingletonClass Z] [IsMarkovKernel M]
     (hε : 0 ≤ ε) (hM : IsEpsDeltaDP M (fun S S' ↦ hammingDist S S' = 1) ε 0)
@@ -570,7 +597,9 @@ theorem expMaxInformation_le_ofReal_iff [Fintype α] [MeasurableSingletonClass �
 in the module docstring). For `S ∈ {0, 1, 2}` with `P[S = 0] = 1/10`, `P[S = 1] = P[S = 2] = 9/20`,
 the deterministic algorithms `A(S) = [S = 2]`, `B(S, 0) = [S = 1]` and `B(S, 1) = 1` satisfy
 `I∞(S; A(S)) ≤ log (20/9)` and `I∞(S; B(S, y)) ≤ log (20/9)` for both `y`, but the adaptive
-composition `C(S) = B(S, A(S))` has `I∞(S; C(S)) > 2 log (20/9)` (in fact `= log 10`). -/
+composition `C(S) = B(S, A(S))` has `I∞(S; C(S)) > 2 log (20/9)` (in fact `= log 10`). This does
+not contradict Lemma 14 (`HasMaxInformation.snd_compProd`), whose hypotheses quantify over every
+prior; it refutes the fixed-prior version that the last step of the paper's proof would give. -/
 theorem MaxInformation.exists_not_maxInformation_snd_compProd_le :
     ∃ (μ : Measure (Fin 3)) (A : Kernel (Fin 3) (Fin 2)) (B : Kernel (Fin 3 × Fin 2) (Fin 2)),
       IsProbabilityMeasure μ ∧ IsMarkovKernel A ∧ IsMarkovKernel B ∧

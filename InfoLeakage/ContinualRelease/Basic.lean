@@ -705,9 +705,12 @@ theorem not_isEpsDP_binaryMechanism (hT : 0 < T) {ε b : ℝ} (hb : 0 < b)
   rw [mul_div_assoc', div_le_div_iff_of_pos_right (by positivity)] at key
   linarith
 
-/-- **Theorem 3.5 of Chan–Shi–Song fails at every power of two**: for `T = 2^k`, the Binary
-Mechanism with i.i.d. `Lap(b)` noise is not `ε`-differentially private when `b < (k + 1) / ε`
-(e.g. Algorithm 2's `b = log₂ T / ε = k / ε`). -/
+/-- **Theorem 3.5 of Chan–Shi–Song fails at every power of two `T = 2^k` with `k ≥ 1`**: for every
+`k` (including `k = 0`), the Binary Mechanism on `T = 2^k` with i.i.d. `Lap(b)` noise of positive
+scale `b` is not `ε`-differentially private when `b < (k + 1) / ε`. For `k ≥ 1` and `ε > 0`, this
+applies to Algorithm 2's `b = log₂ T / ε = k / ε > 0`. For `k = 0` (`T = 1`) Algorithm 2 gives no
+counterexample: its `ε' = ε / log T` is undefined, and `b = k / ε = 0` violates `0 < b`; only
+the positive-scale lower bound is claimed there. -/
 theorem not_isEpsDP_binaryMechanism_two_pow (k : ℕ) {ε b : ℝ} (hb : 0 < b)
     (hεb : ε * b < k + 1) : ¬IsEpsDP (binaryMechanism (2 ^ k) b) Adjacent ε :=
   not_isEpsDP_binaryMechanism (by positivity) hb (by rwa [Nat.log_pow one_lt_two])

@@ -40,9 +40,10 @@ notation `E[q(x) | q = W(x)]` and `E[q(P) | q = W(x)]` reads, here,
 
 ## Main statements
 
-* `IsEpsDeltaDP.integral_le_exp_mul_integral_add`, `IsEpsDeltaDP.integral_sub_integral_le`:
-  replace-one stability, `E[g(M(S))] ≤ e^ε E[g(M(S'))] + δ` for neighbours `S, S'` and
-  `g : Z → [0, 1]`.
+* `IsEpsDeltaDP.integral_le_exp_mul_integral_add`, `IsEpsDeltaDP.integral_sub_integral_le`,
+  `IsEpsDeltaDP.abs_integral_sub_integral_le`: replace-one stability,
+  `E[g(M(S))] ≤ e^ε E[g(M(S'))] + δ` and `|E[g(M(S))] - E[g(M(S'))]| ≤ e^ε - 1 + δ` for
+  neighbours `S, S'` and `g : Z → [0, 1]`.
 * `IsEpsDeltaDP.integral_sum_le`, `IsEpsDeltaDP.integral_sum_integral_le`: the de-correlated
   expectation lemma in a general form, `E[∑ᵢ gᵢ(M(S), Sᵢ)] ≤ e^ε E[∑ᵢ P[gᵢ(M(S), ·)]] + n δ`
   and the reverse inequality, for `gᵢ : Z × 𝒳 → [0, 1]`.
@@ -73,7 +74,8 @@ Bassily et al. (arXiv v1):
 Dwork et al. (arXiv v3):
 * Definition 5 → `IsEpsDeltaDP` with the Hamming neighbouring relation.
 * Lemma 6 → `IsEpsDeltaDP.integral_le_exp_mul_integral_add`; its inequality (1) →
-  `IsEpsDeltaDP.integral_sub_integral_le`. The paper's `E[A(S)(x)]` is `∫ z, g z ∂M S` with
+  `IsEpsDeltaDP.abs_integral_sub_integral_le` (one direction:
+  `IsEpsDeltaDP.integral_sub_integral_le`). The paper's `E[A(S)(x)]` is `∫ z, g z ∂M S` with
   `g = (· x)`; here `g` is any measurable `[0, 1]`-valued function on an arbitrary output space.
 * Corollary 7 (finite-alphabet special case) →
   `IsEpsDeltaDP.abs_integral_empiricalMean_sub_integral_le`; one direction of its proof →
@@ -123,7 +125,11 @@ namespace Generalization
 lemma abs_le_one_of_mem_Icc {a : ℝ} (h : a ∈ Icc (0 : ℝ) 1) : |a| ≤ 1 :=
   abs_le.2 ⟨by linarith [h.1], h.2⟩
 
-/-- The expectation of a `[0, 1]`-valued function under a probability measure lies in `[0, 1]`. -/
+/-- The Bochner integral of a `[0, 1]`-valued function against a probability measure lies in
+`[0, 1]`. No measurability is assumed, so this is a property of Lean's totalized integral: a
+function that is not integrable has integral `0` by convention. When `g` is also
+`AEStronglyMeasurable` (as in every use below), it is integrable and the integral is its
+expectation. -/
 lemma integral_mem_Icc {α : Type*} {mα : MeasurableSpace α} {μ : Measure α}
     [IsProbabilityMeasure μ] {g : α → ℝ} (hg : ∀ x, g x ∈ Icc (0 : ℝ) 1) :
     ∫ x, g x ∂μ ∈ Icc (0 : ℝ) 1 :=
@@ -161,9 +167,10 @@ theorem IsEpsDeltaDP.integral_le_exp_mul_integral_add [IsFiniteKernel M]
   rw [ENNReal.toReal_add (by finiteness) ENNReal.ofReal_ne_top, ENNReal.toReal_mul,
     ENNReal.toReal_ofReal (exp_pos ε).le, ENNReal.toReal_ofReal hδ]
 
-/-- **Lemma 6 of Dwork et al. (STOC 2015)**, inequality (1): an `(ε, δ)`-differentially private
-algorithm is replace-one stable with rate `e^ε - 1 + δ`:
-`E[g(M(S))] - E[g(M(S'))] ≤ e^ε - 1 + δ` for neighbours `S, S'` and measurable `g : Z → [0, 1]`. -/
+/-- **Lemma 6 of Dwork et al. (STOC 2015)**, one direction of inequality (1): an
+`(ε, δ)`-differentially private algorithm is replace-one stable with rate `e^ε - 1 + δ`:
+`E[g(M(S))] - E[g(M(S'))] ≤ e^ε - 1 + δ` for neighbours `S, S'` and measurable `g : Z → [0, 1]`.
+The absolute-value form of (1) is `IsEpsDeltaDP.abs_integral_sub_integral_le`. -/
 theorem IsEpsDeltaDP.integral_sub_integral_le [IsMarkovKernel M] (hM : IsEpsDeltaDP M Adj ε δ)
     (hS : Adj S S') (hε : 0 ≤ ε) {g : Z → ℝ} (hg : Measurable g)
     (hg₁ : ∀ z, g z ∈ Icc (0 : ℝ) 1) :
@@ -171,6 +178,26 @@ theorem IsEpsDeltaDP.integral_sub_integral_le [IsMarkovKernel M] (hM : IsEpsDelt
   have h := hM.integral_le_exp_mul_integral_add hS hg hg₁
   have h₁ := Generalization.integral_mem_Icc (μ := M S') hg₁
   nlinarith [one_le_exp hε, h₁.1, h₁.2]
+
+/-- **Lemma 6 of Dwork et al. (STOC 2015)**, inequality (1): an `(ε, δ)`-differentially private
+algorithm is replace-one stable with rate `e^ε - 1 + δ`:
+`|E[g(M(S))] - E[g(M(S'))]| ≤ e^ε - 1 + δ` for neighbours `S, S'` and measurable
+`g : Z → [0, 1]`. The other direction is `IsEpsDeltaDP.integral_sub_integral_le` applied to
+`1 - g`; no symmetry of `Adj` is needed. -/
+theorem IsEpsDeltaDP.abs_integral_sub_integral_le [IsMarkovKernel M]
+    (hM : IsEpsDeltaDP M Adj ε δ) (hS : Adj S S') (hε : 0 ≤ ε) {g : Z → ℝ} (hg : Measurable g)
+    (hg₁ : ∀ z, g z ∈ Icc (0 : ℝ) 1) :
+    |∫ z, g z ∂M S - ∫ z, g z ∂M S'| ≤ exp ε - 1 + δ := by
+  have h₁ := hM.integral_sub_integral_le hS hε hg hg₁
+  have h₂ := hM.integral_sub_integral_le hS hε (g := fun z ↦ 1 - g z) (measurable_const.sub hg)
+    fun z ↦ ⟨by linarith [(hg₁ z).2], by linarith [(hg₁ z).1]⟩
+  have hint (T : 𝒟) : ∫ z, (1 - g z) ∂M T = 1 - ∫ z, g z ∂M T := by
+    rw [integral_sub (integrable_const 1)
+      (Integrable.of_mem_Icc 0 1 hg.aemeasurable (ae_of_all _ hg₁))]
+    simp
+  rw [hint, hint] at h₂
+  rw [abs_le]
+  constructor <;> linarith
 
 end Stability
 

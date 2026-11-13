@@ -18,8 +18,9 @@ IEEE Trans. Inf. Theory 69(12), 2023 ([arXiv:2205.04935](https://arxiv.org/abs/2
 result numbers follow arXiv v2.
 
 For a secret `X ∼ P_X` and the outcome `y` of a channel `P_{Y|X}`, the pointwise maximal leakage
-`ℓ(X → y)` is the largest multiplicative gain, over all randomized functions `U` of `X`, in the
-probability of guessing `U` correctly after observing `Y = y` (Definition 1). Theorem 1 and
+`ℓ(X → y)` is the logarithm of the largest multiplicative gain, over all randomized functions `U`
+of `X`, in the probability of guessing `U` correctly after observing `Y = y` (Definition 1).
+Theorem 1 and
 Remark 1 evaluate it as
 `ℓ(X → y) = log max_{x ∈ supp P_X} P_{X|Y=y}(x) / P_X(x)`
 `         = log max_{x ∈ supp P_X} P_{Y|X}(y | x) / P_Y(y)`.
@@ -38,7 +39,8 @@ output law they are vacuous or degenerate: for instance `IsEpsPML μ κ ε` then
 
 ## Main definitions
 
-* `pointwiseMaxLeakageRatio μ κ y`: `exp ℓ(X → y) = ⨆_{x ∈ supp μ} κ x {y} / P_Y(y)`, in `ℝ≥0∞`.
+* `pointwiseMaxLeakageRatio μ κ y`: `⨆_{x ∈ supp μ} κ x {y} / P_Y(y)`, in `ℝ≥0∞`; it equals
+  `exp ℓ(X → y)` for `P_Y(y) > 0` (for `P_Y(y) = 0` it is `0`, whereas `exp (Real.log 0) = 1`).
 * `pointwiseMaxLeakage μ κ y`: `ℓ(X → y)`, its logarithm, in `ℝ`.
 * `IsEpsPML μ κ ε`: the almost-sure guarantee `ε`-PML (Definition 4).
 * `IsEpsDeltaPML μ κ ε δ`: the tail-bound guarantee `(ε, δ)`-PML (Definition 5).
@@ -821,8 +823,11 @@ section Posterior
 variable [Fintype α] [MeasurableSingletonClass α] [IsProbabilityMeasure μ]
 
 /-- **Theorem 1**, equation (5), of Saeidian–Cervia–Oechtering–Skoglund, multiplicative form:
-`exp ℓ(X → y) = max_{x ∈ supp P_X} P_{X|Y=y}(x) / P_X(x)` for every outcome `y`. With Remark 1,
-this identifies `pointwiseMaxLeakage` with the closed form of the paper. -/
+`exp ℓ(X → y) = max_{x ∈ supp P_X} P_{X|Y=y}(x) / P_X(x)` for every outcome `y` with
+`P_Y(y) > 0`. With Remark 1, this identifies `pointwiseMaxLeakage` with the closed form of the
+paper. The Lean equality holds for every `y`, as an identity between the totalized ratios in
+`ℝ≥0∞`: for `P_Y(y) = 0` both sides are `0` (no `exp ℓ` reading is intended there, since
+`pointwiseMaxLeakage` is then `Real.log 0 = 0`). -/
 theorem pointwiseMaxLeakageRatio_eq_iSup_posterior (y : β) :
     pointwiseMaxLeakageRatio μ κ y = ⨆ (x) (_ : μ {x} ≠ 0), posterior μ κ y {x} / μ {x} := by
   refine iSup_congr fun x ↦ iSup_congr fun hx ↦ ?_
@@ -930,7 +935,12 @@ section TailBound
 /-- **`(ε, δ)`-PML** (the tail-bound guarantee, Definition 5 of
 Saeidian–Cervia–Oechtering–Skoglund): for the prior `μ`, the mechanism `κ` satisfies
 `(ε, δ)`-PML if `P_{Y}[ℓ(X → Y) ≤ ε] ≥ 1 - δ`. It is meant for countable (in the paper, finite)
-output alphabets, where `pointwiseMaxLeakage` is meaningful on the atoms of `P_Y`. -/
+output alphabets, where `pointwiseMaxLeakage` is meaningful on the atoms of `P_Y`.
+
+The paper's parameter domain is `ε ≥ 0` and `δ ∈ [0, 1]`. The predicate accepts arbitrary real
+`ε` and `δ` and is then an unrestricted extension: for `δ ≥ 1` it holds vacuously, for every
+`ε` (e.g. `ε = -1, δ = 1`). Results that need the paper's range assume it
+explicitly (e.g. `0 ≤ ε` in `IsEpsDeltaPML.mutualInfo_le`). -/
 def IsEpsDeltaPML (μ : Measure α) (κ : Kernel α β) (ε δ : ℝ) : Prop :=
   1 - δ ≤ (κ ∘ₘ μ).real {y | pointwiseMaxLeakage μ κ y ≤ ε}
 

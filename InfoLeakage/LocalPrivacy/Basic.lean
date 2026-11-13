@@ -169,9 +169,11 @@ noncomputable def tvDistSum (p q : α → ℝ) : ℝ :=
   (∑ x, |p x - q x|) / 2
 
 /-- The Kullback–Leibler divergence `D(p ‖ q) = ∑_z p z log (p z / q z)` of two vectors on a finite
-alphabet, in nats. It is the true divergence of probability vectors when `p ≪ q`; the junk value
-`log 0 = 0` is never used below, where the laws are mutually absolutely continuous
-(`outputLaw_eq_zero_iff`, `seqMarginal_eq_zero_iff`). -/
+alphabet, in nats. It is the true divergence of probability vectors when `p ≪ q`. Terms with
+`p z = 0` contribute `0` (e.g. `p = q = (1, 0)` evaluates `0 * log (0 / 0) = 0`), matching the
+convention `0 log (0 / q) = 0`, while absolute continuity excludes positive mass `p z > 0` over a
+zero denominator `q z = 0`, where `Real.log` would give a junk value. Below the laws are mutually
+absolutely continuous (`outputLaw_eq_zero_iff`, `seqMarginal_eq_zero_iff`). -/
 noncomputable def klDivSum (p q : β → ℝ) : ℝ :=
   ∑ z, p z * log (p z / q z)
 
