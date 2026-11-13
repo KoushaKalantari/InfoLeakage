@@ -23,6 +23,29 @@ lake build
 
 Toolchain: `leanprover/lean4:v4.36.0-rc2` (pinned to match Statlib).
 
+## Relationship to Statlib
+
+This library depends on Statlib and does not modify it. Parts of it are being proposed for
+inclusion in Statlib itself: they are ported into Statlib's layout on branches of a fork and
+submitted as pull requests (design discussion:
+[stat-lib/statlib#78](https://github.com/stat-lib/statlib/issues/78)). State as of 2026-11-13:
+
+```mermaid
+flowchart TB
+  S["<b>stat-lib/statlib</b><br/>KL, Rényi and f-divergences, mutual information,<br/>total variation, Markov kernels"]
+  I["<b>InfoLeakage</b> (this repository)<br/>about 22,000 lines, about 30 papers:<br/>leakage measures, DP, Rényi DP, zCDP, subsampling, ..."]
+  F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>branch maximal-leakage: 952 lines, 1 paper<br/>branch leakage-measures: 6,378 lines, 6 papers, not yet submitted"]
+  S -- "dependency (pinned commit, unmodified)" --> I
+  S -- "fork" --> F
+  I -- "code ported into Statlib's layout" --> F
+  F -- "PR #79: branch maximal-leakage" --> S
+```
+
+- [stat-lib/statlib#79](https://github.com/stat-lib/statlib/pull/79) proposes maximal leakage
+  (Issa–Wagner–Kamath) as `Statlib/Divergence/MaximalLeakage/`.
+- Branch [`leakage-measures`](https://github.com/KoushaKalantari/statlib/tree/leakage-measures)
+  adds the other five leakage papers under `Statlib/Divergence/` and `Statlib/Privacy/`.
+
 ## Status
 
 Main results of about thirty papers and books are formalized, mostly for finite alphabets; the
