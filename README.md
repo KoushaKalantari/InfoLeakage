@@ -149,7 +149,7 @@ Four published theorems are false as written. Each is a wrong constant or a dege
 case, each has a counterexample checked in Lean, a corrected version is proved here, and both
 referees confirmed it:
 
-- **Kasiviswanathan–Smith**, Thm. 2.4(2): "(ε/2, δ)-semantic privacy ⇒ (3ε, 2δ)-DP" fails for
+- **Kasiviswanathan–Smith**, Thm. 2.4(2): "(ε, δ)-semantic privacy ⇒ (3ε, 2δ)-DP" fails for
   randomized response on one bit (`not_forall_isDP_of_isEpsDeltaSemanticPrivate`); the repair
   (6ε for ε ≤ 0.225) is proved. The proof of Thm. 2.2 also drops a factor 1/2 in one step; that
   theorem holds.
