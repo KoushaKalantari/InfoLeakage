@@ -37,7 +37,7 @@ submitted as pull requests (design discussion:
 ```mermaid
 flowchart TB
   S["<b>stat-lib/statlib</b><br/>KL, Rényi and f-divergences, mutual information,<br/>total variation, Markov kernels"]
-  I["<b>InfoLeakage</b> (this repository)<br/>about 22,000 lines, about 30 papers:<br/>leakage measures, DP, Rényi DP, zCDP, subsampling, ..."]
+  I["<b>InfoLeakage</b> (this repository)<br/>about 38,000 lines, about 60 papers:<br/>leakage measures, DP, Rényi DP, zCDP, subsampling, ..."]
   F["<b>KoushaKalantari/statlib</b> (fork of Statlib)<br/>leakage stack: 6 branches<br/>differential-privacy stack: 5 branches<br/>Pinsker's inequality: 1 branch"]
   S -- "dependency (pinned commit, unmodified)" --> I
   S -- "fork" --> F
